@@ -5,6 +5,7 @@ from utils.sound_manager import SoundManager
 from core.player import Player
 from core.enemy import Enemy
 from core.bullet import Bullet
+from core.powerup import Powerup
 from utils.constants import *
 
 class Game:
@@ -26,8 +27,13 @@ class Game:
         self.bullets = []
         self.enemy_bullets = []
         self.enemies = []
+        self.powerups = []
+        self.shoot_delay = PLAYER_SHOOT_DELAY
         self.renderer.prepare_starfield()
         self.sound_manager.play_music()
+
+    def add_powerup(self, type, x, y):
+        self.powerups.append(Powerup(x, y, type))
 
     def fade_out(self, duration=2000):
         fade_start_time = pygame.time.get_ticks()
@@ -73,6 +79,13 @@ class Game:
             enemy.update()
             if enemy.is_off_screen():
                 self.enemies.remove(enemy)
+            # Normal enemy independent shoot
+            if enemy.type == 'normal' and enemy.rect.y < screen_height * (2/3) and random.random() < 0.001:
+                start_pos = pygame.math.Vector2(enemy.rect.centerx, enemy.rect.bottom)
+                vel = (0, ENEMY_NORMAL_SPEED)
+                bullet = Bullet.enemy_bullet(start_pos, pygame.math.Vector2(vel), size=4)
+                self.enemy_bullets.append(bullet)
+
             if not self.player.invincible and self.player.collides_with(enemy.rect):
                 self.player_lives -= 1
                 self.enemies.remove(enemy)
@@ -90,7 +103,20 @@ class Game:
                     self.player.make_invincible()
                     if self.player_lives <= 0:
                         self.game_over = True
-                    break
+                        break
+        # Update powerups
+        for powerup in self.powerups[:]:
+            powerup.update()
+            if powerup.is_off_screen():
+                self.powerups.remove(powerup)
+            if self.player.collides_with(powerup.rect):
+                self.powerups.remove(powerup)
+                self.sound_manager.play_explosion()
+                if powerup.type == 'health':
+                    self.player_lives += 1
+                elif powerup.type == 'fire_rate':
+                    self.shoot_delay = max(100, self.shoot_delay - FIRE_RATE_BOOST)
+                    pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
 
         # Player bullets hit enemies
         for bullet in self.bullets[:]:
@@ -98,6 +124,16 @@ class Game:
                 if bullet.collides_with(enemy.rect):
                     self.bullets.remove(bullet)
                     if enemy.hit():
+                        # Drop powerups
+                        r = random.random()
+                        health_chance = POWERUP_HEALTH_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_HEALTH_CHANCE_NORMAL
+                        fire_chance = POWERUP_FIRE_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_FIRE_CHANCE_NORMAL
+                        if r < health_chance:
+                            x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
+                            self.add_powerup('health', x_spawn, enemy.rect.centery - 10)
+                        elif r < health_chance + fire_chance:
+                            x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
+                            self.add_powerup('fire_rate', x_spawn, enemy.rect.centery - 10)
                         self.enemies.remove(enemy)
                         self.score += enemy.get_score()
                         self.sound_manager.play_explosion()
@@ -106,9 +142,11 @@ class Game:
     def draw(self):
         self.screen.fill(black)
         self.renderer.draw_starfield()
+        
         if not self.player.invincible or (pygame.time.get_ticks() // 200) % 2 == 0:
             self.renderer.draw_player_ship(self.player.rect)
         self.renderer.draw_enemies(self.enemies)
+        self.renderer.draw_powerups(self.powerups)
         for bullet in self.bullets:
             bullet.draw(self.screen)
         for bullet in self.enemy_bullets:
@@ -149,7 +187,7 @@ class Game:
             self.player.move(player_speed)
 
     def run(self):
-        pygame.time.set_timer(PLAYER_SHOOT_EVENT, PLAYER_SHOOT_DELAY)
+        pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
         pygame.time.set_timer(ENEMY_SPAWN_EVENT, ENEMY_SPAWN_DELAY)
         pygame.time.set_timer(ENEMY_SHOOT_EVENT, ENEMY_SHOOT_DELAY)
 

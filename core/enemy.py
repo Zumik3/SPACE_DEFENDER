@@ -7,13 +7,14 @@ class Enemy:
     def __init__(self, x, y, enemy_type):
         if enemy_type == 'strong':
             width, height = enemy_strong_width, enemy_strong_height
-            health = 2
+            health = 1
         else:
             width, height = enemy_normal_width, enemy_normal_height
             health = 1
         self.rect = pygame.Rect(x, y, width, height)
         self.health = health
         self.type = enemy_type
+        self.shoot_counter = random.randint(0, 29)  # for staggering
 
     def update(self):
         self.rect.y += enemy_speed

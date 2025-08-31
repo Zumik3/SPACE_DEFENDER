@@ -30,6 +30,6 @@ class Bullet:
         return cls(player_rect.centerx - 2, player_rect.top, -bullet_speed, bullet_color, 0, 4, 10)
 
     @classmethod
-    def enemy_bullet(cls, start_pos, vel):
+    def enemy_bullet(cls, start_pos, vel, size=6):
         from utils.constants import enemy_bullet_color
-        return cls(start_pos.x, start_pos.y, vel.y, enemy_bullet_color, vel.x, 6, 6)
+        return cls(start_pos.x, start_pos.y, vel.y, enemy_bullet_color, vel.x, size, size)
