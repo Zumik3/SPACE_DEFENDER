@@ -1,0 +1,58 @@
+import pygame
+
+# Настройки экрана и стиля
+PIXEL_SIZE = 4
+screen_width = 800
+screen_height = 600
+
+# Цвета
+black = (0, 0, 0)
+white = (255, 255, 255)
+player_body = (200, 200, 200)
+player_wing = (0, 200, 0)
+player_cockpit = (100, 200, 255)
+player_engine = (255, 165, 0)
+bullet_color = (255, 255, 0)
+enemy_bullet_color = (255, 100, 100)
+heart_color = (255, 50, 50)
+enemy_normal_body = (200, 40, 40)
+enemy_normal_highlight = (255, 100, 100)
+enemy_strong_body = (150, 50, 180)
+enemy_strong_highlight = (200, 100, 220)
+enemy_strong_core = (255, 0, 0)
+star_colors = [(100, 100, 100), (180, 180, 180), (255, 255, 255)]
+
+# Настройки игры
+player_width = 11 * PIXEL_SIZE
+player_height = 7 * PIXEL_SIZE
+player_speed = 7
+bullet_speed = 10
+enemy_bullet_speed = 6
+enemy_normal_width = 7 * PIXEL_SIZE
+enemy_normal_height = 5 * PIXEL_SIZE
+enemy_strong_width = 9 * PIXEL_SIZE
+enemy_strong_height = 7 * PIXEL_SIZE
+enemy_speed = 4
+
+# Таймеры
+PLAYER_SHOOT_EVENT = pygame.USEREVENT + 1
+ENEMY_SPAWN_EVENT = pygame.USEREVENT + 2
+ENEMY_SHOOT_EVENT = pygame.USEREVENT + 3
+PLAYER_SHOOT_DELAY = 300
+ENEMY_SPAWN_DELAY = 900
+ENEMY_SHOOT_DELAY = 2000
+
+# Шрифты
+SCORE_FONT_SIZE = 24
+GAME_OVER_FONT_SIZE = 60
+RESTART_FONT_SIZE = 30
+score_font = None
+game_over_font = None
+restart_font = None
+
+def init_fonts():
+    global score_font, game_over_font, restart_font
+    if score_font is None:
+        score_font = pygame.font.SysFont("Verdana", SCORE_FONT_SIZE)
+        game_over_font = pygame.font.SysFont("Verdana", GAME_OVER_FONT_SIZE)
+        restart_font = pygame.font.SysFont("Verdana", RESTART_FONT_SIZE)
