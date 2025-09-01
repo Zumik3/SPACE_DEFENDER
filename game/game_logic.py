@@ -67,6 +67,8 @@ class Game:
 
         # Полностью останавливаем музыку
         self.sound_manager.stop_music()
+        # Сбрасываем громкость музыки, чтобы при следующем запуске она была правильной
+        self.sound_manager.set_music_volume(self.sound_manager.music_volume)
 
     def update(self):
         self.player.update()
@@ -240,6 +242,7 @@ class Game:
         """Единая точка запуска уровня"""
         self.renderer.prepare_starfield()
         # Восстанавливаем громкость музыки из настроек перед запуском
+        # Убеждаемся, что громкость установлена правильно
         self.sound_manager.set_music_volume(self.sound_manager.music_volume)
         self.sound_manager.play_music()
         pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
