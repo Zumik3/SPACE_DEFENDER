@@ -195,22 +195,39 @@ class Game:
         # Game Over Screen
         self.fade_out()
         # self.screen.fill(black)
-        game_over_text = score_font.render("Game Over", True, white)
+        
+        # Создаем шрифты для экрана Game Over
+        game_over_font = pygame.font.Font(None, 48)  # Уменьшаем размер шрифта
+        option_font = pygame.font.Font(None, 24)
+        
+        game_over_text = game_over_font.render("GAME OVER", True, white)
         final_score_text = score_font.render(f"Final Score: {self.score}", True, white)
-        restart_text = restart_font.render("Press ENTER to restart", True, white)
-        self.screen.blit(game_over_text, game_over_text.get_rect(center=(screen_width/2, screen_height/2 - 60)))
-        self.screen.blit(final_score_text, final_score_text.get_rect(center=(screen_width/2, screen_height/2 + 10)))
-        self.screen.blit(restart_text, restart_text.get_rect(center=(screen_width/2, screen_height/2 + 60)))
+        
+        # Пункты меню
+        restart_text = option_font.render("Press ENTER to Restart", True, white)
+        menu_text = option_font.render("Press ESC for Main Menu", True, white)
+        
+        # Отображаем тексты с учетом размеров экрана
+        self.screen.blit(game_over_text, game_over_text.get_rect(center=(screen_width/2, screen_height/2 - 80)))
+        self.screen.blit(final_score_text, final_score_text.get_rect(center=(screen_width/2, screen_height/2 - 20)))
+        self.screen.blit(restart_text, restart_text.get_rect(center=(screen_width/2, screen_height/2 + 30)))
+        self.screen.blit(menu_text, menu_text.get_rect(center=(screen_width/2, screen_height/2 + 70)))
         pygame.display.update()
 
-        # Wait for restart
-        waiting_for_restart = True
-        while waiting_for_restart:
+        # Wait for restart or menu selection
+        waiting_for_selection = True
+        while waiting_for_selection:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    waiting_for_restart = False
-                    self.reset_game()
-                    self.run(screen)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        # Restart game
+                        waiting_for_selection = False
+                        self.reset_game()
+                        self.run(screen)
+                    elif event.key == pygame.K_ESCAPE:
+                        # Return to main menu
+                        waiting_for_selection = False
+                        return  # Выходим из метода run, чтобы вернуться в main.py
