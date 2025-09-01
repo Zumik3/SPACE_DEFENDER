@@ -28,9 +28,10 @@ class SoundManager:
 
     def play_music(self, loops=-1):
         # Устанавливаем текущую громкость перед воспроизведением
-        if hasattr(self, 'music_volume'):
+        if hasattr(self, 'music_volume') and self.music_sound:
             self.music_sound.set_volume(self.music_volume)
-        self.music_sound.play(loops)
+        if self.music_sound:
+            self.music_sound.play(loops)
 
     def stop_music(self):
         if self.music_sound:
@@ -57,15 +58,17 @@ class SoundManager:
 
     def play_shoot(self):
         # Применяем текущую громкость SFX перед воспроизведением
-        if hasattr(self, 'sfx_volume'):
+        if hasattr(self, 'sfx_volume') and self.shoot_sound:
             self.shoot_sound.set_volume(self.sfx_volume)
-        self.shoot_sound.play()
+        if self.shoot_sound:
+            self.shoot_sound.play()
 
     def play_explosion(self):
         # Применяем текущую громкость SFX перед воспроизведением
-        if hasattr(self, 'sfx_volume'):
+        if hasattr(self, 'sfx_volume') and self.explosion_sound:
             self.explosion_sound.set_volume(self.sfx_volume)
-        self.explosion_sound.play()
+        if self.explosion_sound:
+            self.explosion_sound.play()
 
     def fade_out_music(self, duration=2000):
         fade_start_time = pygame.time.get_ticks()
