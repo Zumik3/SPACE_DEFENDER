@@ -28,6 +28,6 @@ class PixelTitle:
         # Центрируем по экрану, если координаты (0, 0)
         if x == 0 and y == 0:
             x = (screen_width - self.width) // 2
-            y = screen_height // 2 - 200  # Подняли еще выше
+            y = screen_height // 2 - 240  # Подняли еще выше (примерно на 4 см)
             
         screen.blit(self.title_image, (x, y))
