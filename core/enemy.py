@@ -1,7 +1,6 @@
 import pygame
 from utils.constants import enemy_strong_width, enemy_strong_height, enemy_normal_width, enemy_normal_height, enemy_speed, screen_height, white
 import random
-import math
 from core.game_object import GameObject
 
 class Enemy(pygame.sprite.Sprite, GameObject):

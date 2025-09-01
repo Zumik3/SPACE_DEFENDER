@@ -1,4 +1,3 @@
-import pygame
 from ui.render_component import RenderComponent
 
 class PlayerRenderComponent(RenderComponent):
