@@ -230,10 +230,11 @@ class Game:
                             self.reset_game()
                             self.start_level()
                             # После завершения уровня возвращаемся к меню Game Over
-                            self.run(screen)
+                            # Вместо рекурсивного вызова, просто продолжаем цикл
+                            return True  # Индикатор перезапуска
                         elif selected_option == 1:  # Main Menu
                             waiting_for_selection = False
-                            return  # Выходим из метода run, чтобы вернуться в main.py
+                            return False  # Индикатор выхода в главное меню
                             
     def start_level(self):
         """Единая точка запуска уровня"""
@@ -251,3 +252,72 @@ class Game:
             self.update()
             self.draw()
             self.clock.tick(60)
+            
+    def run(self, screen):
+        """Основной метод запуска игры"""
+        self.init_pygame(screen)
+        
+        # Игровой цикл с возможностью перезапуска
+        while True:
+            # Запускаем уровень
+            self.start_level()
+            
+            # Game Over Screen
+            self.fade_out()
+            
+            # Показываем меню Game Over и ждем выбора
+            restart = self.show_game_over_menu()
+            if not restart:
+                break  # Выход в главное меню
+                
+        return True  # Возвращаемся в главное меню
+        
+    def show_game_over_menu(self):
+        """Показывает меню Game Over и возвращает True для перезапуска или False для выхода"""
+        game_over_text = game_over_font.render("GAME OVER", True, white)
+        final_score_text = score_font.render(f"Final Score: {self.score}", True, white)
+        
+        # Пункты меню
+        menu_options = ["Restart Game", "Main Menu"]
+        selected_option = 0
+        
+        # Функция для отображения меню
+        def draw_menu():
+            self.screen.fill(black)
+            self.screen.blit(game_over_text, game_over_text.get_rect(center=(screen_width/2, screen_height/2 - 80)))
+            self.screen.blit(final_score_text, final_score_text.get_rect(center=(screen_width/2, screen_height/2 - 20)))
+            
+            # Отображаем пункты меню
+            for i, option in enumerate(menu_options):
+                color = (255, 255, 0) if i == selected_option else white  # Желтый для выбранного пункта
+                text = menu_item_font.render(option, True, color)
+                text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + 30 + i * 40))
+                self.screen.blit(text, text_rect)
+                
+            pygame.display.update()
+        
+        # Отображаем начальное меню
+        draw_menu()
+
+        # Wait for menu selection
+        waiting_for_selection = True
+        while waiting_for_selection:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        selected_option = (selected_option - 1) % len(menu_options)
+                        draw_menu()
+                    elif event.key == pygame.K_DOWN:
+                        selected_option = (selected_option + 1) % len(menu_options)
+                        draw_menu()
+                    elif event.key == pygame.K_RETURN:
+                        if selected_option == 0:  # Restart Game
+                            waiting_for_selection = False
+                            self.reset_game()
+                            return True
+                        elif selected_option == 1:  # Main Menu
+                            waiting_for_selection = False
+                            return False
