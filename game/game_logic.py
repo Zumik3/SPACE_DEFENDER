@@ -10,13 +10,14 @@ from utils.constants import *
 
 class Game:
     def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((screen_width, screen_height))
-        pygame.display.set_caption("Star Game")
+        self.reset_game()
+        self.game_over = False
+
+    def init_pygame(self, screen):
+        self.screen = screen
         self.clock = pygame.time.Clock()
         self.renderer = Renderer(self.screen)
         self.sound_manager = SoundManager()
-        self.reset_game()
 
     def reset_game(self):
         self.score = 0
@@ -29,8 +30,10 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.powerups = pygame.sprite.Group()
         self.shoot_delay = PLAYER_SHOOT_DELAY
-        self.renderer.prepare_starfield()
-        self.sound_manager.play_music()
+        if hasattr(self, 'renderer'):
+            self.renderer.prepare_starfield()
+        if hasattr(self, 'sound_manager'):
+            self.sound_manager.play_music()
 
     def add_powerup(self, type, x, y):
         # Этот метод больше не нужен, так как мы используем новый подход к бонусам
@@ -168,40 +171,42 @@ class Game:
         if keys[pygame.K_RIGHT]:
             self.player.move(player_speed)
 
-    def run(self):
+    def run(self, screen):
+        self.init_pygame(screen)
+        self.renderer.prepare_starfield()
+        self.sound_manager.play_music()
         pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
         pygame.time.set_timer(ENEMY_SPAWN_EVENT, ENEMY_SPAWN_DELAY)
         pygame.time.set_timer(ENEMY_SHOOT_EVENT, ENEMY_SHOOT_DELAY)
 
-        while True:
-            self.reset_game()
-            self.game_over = False
+        self.game_over = False
+        while not self.game_over:
+            events = pygame.event.get()
+            self.handle_events(events)
+            self.handle_keys()
+            self.update()
+            self.draw()
+            self.clock.tick(60)
 
-            while not self.game_over:
-                events = pygame.event.get()
-                self.handle_events(events)
-                self.handle_keys()
-                self.update()
-                self.draw()
-                self.clock.tick(60)
+        # Game Over Screen
+        self.fade_out()
+        # self.screen.fill(black)
+        game_over_text = score_font.render("Game Over", True, white)
+        final_score_text = score_font.render(f"Final Score: {self.score}", True, white)
+        restart_text = restart_font.render("Press ENTER to restart", True, white)
+        self.screen.blit(game_over_text, game_over_text.get_rect(center=(screen_width/2, screen_height/2 - 60)))
+        self.screen.blit(final_score_text, final_score_text.get_rect(center=(screen_width/2, screen_height/2 + 10)))
+        self.screen.blit(restart_text, restart_text.get_rect(center=(screen_width/2, screen_height/2 + 60)))
+        pygame.display.update()
 
-            # Game Over Screen
-            self.fade_out()
-            # self.screen.fill(black)
-            game_over_text = score_font.render("Game Over", True, white)
-            final_score_text = score_font.render(f"Final Score: {self.score}", True, white)
-            restart_text = restart_font.render("Press ENTER to restart", True, white)
-            self.screen.blit(game_over_text, game_over_text.get_rect(center=(screen_width/2, screen_height/2 - 60)))
-            self.screen.blit(final_score_text, final_score_text.get_rect(center=(screen_width/2, screen_height/2 + 10)))
-            self.screen.blit(restart_text, restart_text.get_rect(center=(screen_width/2, screen_height/2 + 60)))
-            pygame.display.update()
-
-            # Wait for restart
-            waiting_for_restart = True
-            while waiting_for_restart:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        quit()
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                        waiting_for_restart = False
+        # Wait for restart
+        waiting_for_restart = True
+        while waiting_for_restart:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    waiting_for_restart = False
+                    self.reset_game()
+                    self.run(screen)
