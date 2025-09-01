@@ -1,0 +1,39 @@
+import pygame
+import os
+from utils.constants import *
+
+class PixelTitle:
+    def __init__(self):
+        # Загружаем изображение названия игры
+        assets_dir = os.path.join(os.path.dirname(__file__), '..', 'assets')
+        self.title_image = pygame.image.load(os.path.join(assets_dir, 'title.png')).convert_alpha()
+        
+        # Получаем оригинальные размеры изображения
+        self.original_width = self.title_image.get_width()
+        self.original_height = self.title_image.get_height()
+        
+        # Уменьшаем размер изображения на 20%
+        scale_factor = 0.8
+        new_width = int(self.original_width * scale_factor)
+        new_height = int(self.original_height * scale_factor)
+        
+        # Если изображение все еще шире экрана, масштабируем его до ширины экрана
+        if new_width > screen_width:
+            scale_factor = screen_width / new_width
+            new_width = int(new_width * scale_factor)
+            new_height = int(new_height * scale_factor)
+        
+        # Применяем финальное масштабирование
+        self.title_image = pygame.transform.scale(self.title_image, (new_width, new_height))
+        
+        # Получаем финальные размеры изображения
+        self.width = self.title_image.get_width()
+        self.height = self.title_image.get_height()
+        
+    def draw(self, screen, x, y):
+        # Рисуем изображение названия игры
+        # Центрируем только по горизонтали, если x=0
+        if x == 0:
+            x = (screen_width - self.width) // 2
+            
+        screen.blit(self.title_image, (x, y))

@@ -1,8 +1,9 @@
 import pygame
 import random
 from utils.constants import *
+from core.game_object import GameObject
 
-class Powerup(pygame.sprite.Sprite):
+class Powerup(pygame.sprite.Sprite, GameObject):
     def __init__(self, x, y):
         super().__init__()
         self.vel_y = POWERUP_SPEED
@@ -46,6 +47,16 @@ class Powerup(pygame.sprite.Sprite):
             return FireRatePowerup(x_spawn, enemy.rect.centery - 10)
         
         return None
+        
+    def draw(self, renderer):
+        # Рисуем бонус на экране
+        pass  # Реализация зависит от подкласса
+        
+    def get_rect(self):
+        return self.rect
+        
+    def is_active(self):
+        return True
 
 
 class HealthPowerup(Powerup):

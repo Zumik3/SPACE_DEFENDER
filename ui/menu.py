@@ -1,20 +1,21 @@
 import pygame
 from utils.constants import *
-import os
+from ui.pixel_title import PixelTitle
 
 class Menu:
     def __init__(self, screen):
         self.screen = screen
         self.selected_option = 0
         self.options = ["New Game", "Settings", "Exit"]
+        self.pixel_title = PixelTitle()
         
     def draw(self):
         self.screen.fill(black)
         
-        # Рисуем название игры
-        title_text = menu_title_font.render("STAR GATE", True, white)
-        title_rect = title_text.get_rect(center=(screen_width/2, screen_height/2 - 100))
-        self.screen.blit(title_text, title_rect)
+        # Рисуем пиксельное название игры (по центру горизонтали, на фиксированной высоте)
+        title_x = 0  # Будет центрировано внутри PixelTitle
+        title_y = 50  # Фиксированная позиция сверху
+        self.pixel_title.draw(self.screen, title_x, title_y)
         
         # Рисуем пункты меню
         for i, option in enumerate(self.options):

@@ -9,6 +9,11 @@ class Renderer:
         self.prepare_starfield()
 
     def prepare_starfield(self):
+        # Очищаем существующее звездное поле
+        for i in range(3):
+            self.starfield[i].clear()
+            
+        # Создаем звезды для каждого слоя
         for i in range(3):
             speed = 0.5 + i * 0.5
             size = 1 + i
@@ -100,16 +105,3 @@ class Renderer:
         for powerup in powerups:
             # Рисуем бонусы через их собственный метод draw
             powerup.draw(self.screen)
-
-    def fade_out_display(self, duration=2000):
-        fade_start_time = pygame.time.get_ticks()
-        fade_duration = duration
-        fade_surface = pygame.Surface((screen_width, screen_height))
-        fade_surface.fill((0, 0, 0))
-        while pygame.time.get_ticks() - fade_start_time < fade_duration:
-            progress = (pygame.time.get_ticks() - fade_start_time) / fade_duration
-            alpha = int(progress * 255)
-            fade_surface.set_alpha(alpha)
-            self.screen.blit(fade_surface, (0, 0))
-            pygame.display.update()
-            pygame.time.delay(10)
