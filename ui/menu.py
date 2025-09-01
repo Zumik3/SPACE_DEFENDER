@@ -1,11 +1,10 @@
 import pygame
 from utils.constants import *
+import os
 
 class Menu:
     def __init__(self, screen):
         self.screen = screen
-        self.font_large = pygame.font.SysFont("Verdana", 48)
-        self.font_medium = pygame.font.SysFont("Verdana", 36)
         self.selected_option = 0
         self.options = ["New Game", "Settings", "Exit"]
         
@@ -13,14 +12,14 @@ class Menu:
         self.screen.fill(black)
         
         # Рисуем название игры
-        title_text = self.font_large.render("STAR GATE", True, white)
+        title_text = menu_title_font.render("STAR GATE", True, white)
         title_rect = title_text.get_rect(center=(screen_width/2, screen_height/2 - 100))
         self.screen.blit(title_text, title_rect)
         
         # Рисуем пункты меню
         for i, option in enumerate(self.options):
-            color = white if i != self.selected_option else (255, 255, 0)  # Выделенный пункт желтого цвета
-            text = self.font_medium.render(option, True, color)
+            color = (255, 255, 0) if i == self.selected_option else white  # Выделенный пункт желтого цвета
+            text = menu_item_font.render(option, True, color)
             text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + i * 50))
             self.screen.blit(text, text_rect)
             

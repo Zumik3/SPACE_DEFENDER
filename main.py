@@ -32,6 +32,8 @@ if __name__ == "__main__":
                 in_menu = False
                 # Запускаем игру
                 game.run(screen)
+                # После завершения игры возвращаемся в меню
+                in_menu = True
             elif action == "settings":
                 in_menu = False
                 in_settings = True

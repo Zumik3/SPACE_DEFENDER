@@ -1,4 +1,5 @@
 import pygame
+import os
 
 # Настройки экрана и стиля
 PIXEL_SIZE = 4
@@ -54,17 +55,42 @@ POWERUP_FIRE_COLOR = (255, 255, 0)
 POWERUP_SIZE = 30
 FIRE_RATE_BOOST = 100
 
-# Шрифты
+# Размеры шрифтов
 SCORE_FONT_SIZE = 24
-GAME_OVER_FONT_SIZE = 60
-RESTART_FONT_SIZE = 30
+GAME_OVER_FONT_SIZE = 48
+MENU_TITLE_FONT_SIZE = 36
+MENU_ITEM_FONT_SIZE = 24
+SETTINGS_TITLE_FONT_SIZE = 36
+SETTINGS_ITEM_FONT_SIZE = 24
+
+# Шрифты
 score_font = None
 game_over_font = None
-restart_font = None
+menu_title_font = None
+menu_item_font = None
+settings_title_font = None
+settings_item_font = None
 
 def init_fonts():
-    global score_font, game_over_font, restart_font
+    global score_font, game_over_font, menu_title_font, menu_item_font, settings_title_font, settings_item_font
     if score_font is None:
-        score_font = pygame.font.SysFont("Verdana", SCORE_FONT_SIZE)
-        game_over_font = pygame.font.SysFont("Verdana", GAME_OVER_FONT_SIZE)
-        restart_font = pygame.font.SysFont("Verdana", RESTART_FONT_SIZE)
+        # Определяем путь к шрифту
+        font_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'fonts', 'PressStart2P-Regular.ttf')
+        
+        # Проверяем, существует ли файл шрифта
+        if os.path.exists(font_path):
+            # Используем шрифт Press Start 2P
+            score_font = pygame.font.Font(font_path, SCORE_FONT_SIZE)
+            game_over_font = pygame.font.Font(font_path, GAME_OVER_FONT_SIZE)
+            menu_title_font = pygame.font.Font(font_path, MENU_TITLE_FONT_SIZE)
+            menu_item_font = pygame.font.Font(font_path, MENU_ITEM_FONT_SIZE)
+            settings_title_font = pygame.font.Font(font_path, SETTINGS_TITLE_FONT_SIZE)
+            settings_item_font = pygame.font.Font(font_path, SETTINGS_ITEM_FONT_SIZE)
+        else:
+            # Если шрифт не найден, используем системный шрифт
+            score_font = pygame.font.SysFont("Verdana", SCORE_FONT_SIZE)
+            game_over_font = pygame.font.SysFont("Verdana", GAME_OVER_FONT_SIZE)
+            menu_title_font = pygame.font.SysFont("Verdana", MENU_TITLE_FONT_SIZE)
+            menu_item_font = pygame.font.SysFont("Verdana", MENU_ITEM_FONT_SIZE)
+            settings_title_font = pygame.font.SysFont("Verdana", SETTINGS_TITLE_FONT_SIZE)
+            settings_item_font = pygame.font.SysFont("Verdana", SETTINGS_ITEM_FONT_SIZE)
