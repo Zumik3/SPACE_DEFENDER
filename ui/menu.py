@@ -12,15 +12,10 @@ class Menu:
     def draw(self):
         self.screen.fill(black)
         
-        # Рисуем пиксельный космический логотип
-        logo_x = (screen_width - 15 * 8) // 2  # Центрируем по ширине (15 пикселей * 8 размер пикселя)
-        logo_y = screen_height // 2 - 150
-        self.pixel_title.draw(self.screen, logo_x, logo_y)
-        
-        # Рисуем подпись под логотипом
-        subtitle_text = menu_item_font.render("SPACE DEFENDER", True, (200, 200, 255))
-        subtitle_rect = subtitle_text.get_rect(center=(screen_width/2, screen_height/2 - 30))
-        self.screen.blit(subtitle_text, subtitle_rect)
+        # Рисуем пиксельное название игры
+        title_x = (screen_width - 350) // 2  # Центрируем по ширине
+        title_y = screen_height // 2 - 100
+        self.pixel_title.draw(self.screen, title_x, title_y)
         
         # Рисуем пункты меню
         for i, option in enumerate(self.options):
