@@ -24,18 +24,9 @@ class Settings:
         self.music_volume = 0.5
         self.sfx_volume = 0.5
         
-        # Позиции ползунков
-        self.slider_width = 200
-        self.slider_height = 20
-        self.slider_y_offset = 50
-        
-        # Позиции ползунков
-        self.music_slider_pos = (screen_width // 2 - self.slider_width // 2, screen_height // 2 - 20)
-        self.sfx_slider_pos = (screen_width // 2 - self.slider_width // 2, screen_height // 2 + self.slider_y_offset - 20)
-        
-        # Состояние перетаскивания ползунков
-        self.dragging_music = False
-        self.dragging_sfx = False
+        # Выбранный пункт настроек
+        self.selected_option = 0
+        self.options = ["Music Volume", "SFX Volume"]
         
     def draw(self):
         self.screen.fill(black)
@@ -45,27 +36,24 @@ class Settings:
         title_rect = title_text.get_rect(center=(screen_width/2, screen_height/2 - 150))
         self.screen.blit(title_text, title_rect)
         
-        # Рисуем надписи
-        music_text = self.font_medium.render("Music Volume", True, white)
-        music_rect = music_text.get_rect(midright=(self.music_slider_pos[0] - 20, self.music_slider_pos[1] + self.slider_height // 2))
-        self.screen.blit(music_text, music_rect)
+        # Рисуем пункты настроек
+        for i, option in enumerate(self.options):
+            # Выделение выбранного пункта
+            color = (255, 255, 0) if i == self.selected_option else white  # Желтый цвет для выбранного пункта
+            text = self.font_medium.render(option, True, color)
+            text_rect = text.get_rect(center=(screen_width/2, screen_height/2 - 50 + i * 50))
+            self.screen.blit(text, text_rect)
+            
+            # Рисуем значение настройки
+            value = self.music_volume if i == 0 else self.sfx_volume
+            value_text = self.font_medium.render(f"{int(value * 100)}%", True, white)
+            value_rect = value_text.get_rect(center=(screen_width/2, screen_height/2 - 50 + i * 50 + 30))
+            self.screen.blit(value_text, value_rect)
         
-        sfx_text = self.font_medium.render("SFX Volume", True, white)
-        sfx_rect = sfx_text.get_rect(midright=(self.sfx_slider_pos[0] - 20, self.sfx_slider_pos[1] + self.slider_height // 2))
-        self.screen.blit(sfx_text, sfx_rect)
-        
-        # Рисуем ползунки
-        self.draw_slider(self.music_slider_pos, self.music_volume, self.dragging_music)
-        self.draw_slider(self.sfx_slider_pos, self.sfx_volume, self.dragging_sfx)
-        
-        # Рисуем значения
-        music_value = self.font_medium.render(f"{int(self.music_volume * 100)}%", True, white)
-        music_value_rect = music_value.get_rect(midleft=(self.music_slider_pos[0] + self.slider_width + 20, self.music_slider_pos[1] + self.slider_height // 2))
-        self.screen.blit(music_value, music_value_rect)
-        
-        sfx_value = self.font_medium.render(f"{int(self.sfx_volume * 100)}%", True, white)
-        sfx_value_rect = sfx_value.get_rect(midleft=(self.sfx_slider_pos[0] + self.slider_width + 20, self.sfx_slider_pos[1] + self.slider_height // 2))
-        self.screen.blit(sfx_value, sfx_value_rect)
+        # Рисуем инструкцию
+        instruction_text = self.font_medium.render("UP/DOWN: Select option, LEFT/RIGHT: Adjust value", True, (150, 150, 150))
+        instruction_rect = instruction_text.get_rect(center=(screen_width/2, screen_height/2 + 100))
+        self.screen.blit(instruction_text, instruction_rect)
         
         # Рисуем кнопку возврата
         back_text = self.font_medium.render("Press ESC to return", True, white)
@@ -74,20 +62,6 @@ class Settings:
         
         pygame.display.update()
         
-    def draw_slider(self, pos, value, dragging):
-        # Рисуем фон ползунка
-        pygame.draw.rect(self.screen, (100, 100, 100), (pos[0], pos[1], self.slider_width, self.slider_height))
-        
-        # Рисуем заполненную часть ползунка
-        fill_width = int(self.slider_width * value)
-        fill_color = (255, 255, 0) if dragging else (200, 200, 200)
-        pygame.draw.rect(self.screen, fill_color, (pos[0], pos[1], fill_width, self.slider_height))
-        
-        # Рисуем ползунок
-        knob_x = pos[0] + int(self.slider_width * value) - 5
-        knob_color = (255, 255, 0) if dragging else (255, 255, 255)
-        pygame.draw.circle(self.screen, knob_color, (knob_x, pos[1] + self.slider_height // 2), 10)
-        
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,43 +69,29 @@ class Settings:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return "back"
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Левая кнопка мыши
-                    mouse_pos = pygame.mouse.get_pos()
-                    # Проверяем, нажат ли ползунок музыки
-                    if self.is_mouse_over_slider(mouse_pos, self.music_slider_pos):
-                        self.dragging_music = True
-                    # Проверяем, нажат ли ползунок звуковых эффектов
-                    elif self.is_mouse_over_slider(mouse_pos, self.sfx_slider_pos):
-                        self.dragging_sfx = True
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:  # Левая кнопка мыши
-                    self.dragging_music = False
-                    self.dragging_sfx = False
-            elif event.type == pygame.MOUSEMOTION:
-                if self.dragging_music or self.dragging_sfx:
-                    mouse_pos = pygame.mouse.get_pos()
-                    # Обновляем значение ползунка музыки
-                    if self.dragging_music:
-                        self.music_volume = self.get_slider_value(mouse_pos, self.music_slider_pos)
-                        self.sound_manager.set_music_volume(self.music_volume)
-                    # Обновляем значение ползунка звуковых эффектов
-                    elif self.dragging_sfx:
-                        self.sfx_volume = self.get_slider_value(mouse_pos, self.sfx_slider_pos)
-                        self.sound_manager.set_sfx_volume(self.sfx_volume)
+                elif event.key == pygame.K_UP:
+                    # Перемещение вверх по пунктам настроек
+                    self.selected_option = (self.selected_option - 1) % len(self.options)
+                elif event.key == pygame.K_DOWN:
+                    # Перемещение вниз по пунктам настроек
+                    self.selected_option = (self.selected_option + 1) % len(self.options)
+                elif event.key == pygame.K_LEFT:
+                    # Уменьшение значения выбранной настройки
+                    self.adjust_selected_option(-0.05)
+                elif event.key == pygame.K_RIGHT:
+                    # Увеличение значения выбранной настройки
+                    self.adjust_selected_option(0.05)
                         
         return None
         
-    def is_mouse_over_slider(self, mouse_pos, slider_pos):
-        knob_x = slider_pos[0] + int(self.slider_width * (self.music_volume if slider_pos == self.music_slider_pos else self.sfx_volume))
-        knob_rect = pygame.Rect(knob_x - 10, slider_pos[1], 20, self.slider_height)
-        return knob_rect.collidepoint(mouse_pos)
-        
-    def get_slider_value(self, mouse_pos, slider_pos):
-        # Вычисляем значение ползунка на основе позиции мыши
-        relative_x = mouse_pos[0] - slider_pos[0]
-        value = max(0, min(1, relative_x / self.slider_width))
-        return value
+    def adjust_selected_option(self, delta):
+        # Ограничиваем значение между 0 и 1
+        if self.selected_option == 0:  # Music Volume
+            self.music_volume = max(0, min(1, self.music_volume + delta))
+            self.sound_manager.set_music_volume(self.music_volume)
+        elif self.selected_option == 1:  # SFX Volume
+            self.sfx_volume = max(0, min(1, self.sfx_volume + delta))
+            self.sound_manager.set_sfx_volume(self.sfx_volume)
         
     def apply_settings(self):
         # Применяем настройки громкости
