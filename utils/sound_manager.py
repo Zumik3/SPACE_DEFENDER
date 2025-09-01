@@ -28,7 +28,8 @@ class SoundManager:
 
     def play_music(self, loops=-1):
         # Устанавливаем текущую громкость перед воспроизведением
-        self.set_music_volume(self.music_volume if hasattr(self, 'music_volume') else 0.5)
+        if hasattr(self, 'music_volume'):
+            self.music_sound.set_volume(self.music_volume)
         self.music_sound.play(loops)
 
     def stop_music(self):
@@ -38,12 +39,16 @@ class SoundManager:
     def set_music_volume(self, volume):
         if self.music_sound:
             self.music_sound.set_volume(volume)
+        # Сохраняем значение громкости
+        self.music_volume = volume
 
     def set_sfx_volume(self, volume):
         if self.shoot_sound:
             self.shoot_sound.set_volume(volume)
         if self.explosion_sound:
             self.explosion_sound.set_volume(volume)
+        # Сохраняем значение громкости
+        self.sfx_volume = volume
 
     def get_music_volume(self):
         if self.music_sound:
