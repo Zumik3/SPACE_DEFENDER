@@ -17,7 +17,6 @@ if __name__ == "__main__":
     sound_manager = SoundManager()
     menu = Menu(screen)
     settings = Settings(screen, sound_manager)
-    game = Game(sound_manager)
     
     # Показываем меню
     in_menu = True
@@ -30,6 +29,8 @@ if __name__ == "__main__":
             
             if action == "new_game":
                 in_menu = False
+                # Создаем новую игровую сессию при каждом запуске
+                game = Game(sound_manager)
                 # Запускаем игру
                 game.run(screen)
                 # После завершения игры возвращаемся в меню
