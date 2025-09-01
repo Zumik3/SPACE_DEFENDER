@@ -178,21 +178,9 @@ class Game:
 
     def run(self, screen):
         self.init_pygame(screen)
-        self.renderer.prepare_starfield()
-        self.sound_manager.play_music()
-        pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
-        pygame.time.set_timer(ENEMY_SPAWN_EVENT, ENEMY_SPAWN_DELAY)
-        pygame.time.set_timer(ENEMY_SHOOT_EVENT, ENEMY_SHOOT_DELAY)
-
-        self.game_over = False
-        while not self.game_over:
-            events = pygame.event.get()
-            self.handle_events(events)
-            self.handle_keys()
-            self.update()
-            self.draw()
-            self.clock.tick(60)
-
+        # Игровой цикл
+        self.start_level()
+        
         # Game Over Screen
         self.fade_out()
         # self.screen.fill(black)
@@ -240,9 +228,26 @@ class Game:
                         if selected_option == 0:  # Restart Game
                             waiting_for_selection = False
                             self.reset_game()
-                            # Включаем музыку при перезапуске
-                            self.sound_manager.play_music()
+                            self.start_level()
+                            # После завершения уровня возвращаемся к меню Game Over
                             self.run(screen)
                         elif selected_option == 1:  # Main Menu
                             waiting_for_selection = False
                             return  # Выходим из метода run, чтобы вернуться в main.py
+                            
+    def start_level(self):
+        """Единая точка запуска уровня"""
+        self.renderer.prepare_starfield()
+        self.sound_manager.play_music()
+        pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
+        pygame.time.set_timer(ENEMY_SPAWN_EVENT, ENEMY_SPAWN_DELAY)
+        pygame.time.set_timer(ENEMY_SHOOT_EVENT, ENEMY_SHOOT_DELAY)
+
+        self.game_over = False
+        while not self.game_over:
+            events = pygame.event.get()
+            self.handle_events(events)
+            self.handle_keys()
+            self.update()
+            self.draw()
+            self.clock.tick(60)

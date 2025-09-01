@@ -52,12 +52,14 @@ class SoundManager:
 
     def play_shoot(self):
         # Применяем текущую громкость SFX перед воспроизведением
-        self.shoot_sound.set_volume(self.sfx_volume if hasattr(self, 'sfx_volume') else 0.5)
+        if hasattr(self, 'sfx_volume'):
+            self.shoot_sound.set_volume(self.sfx_volume)
         self.shoot_sound.play()
 
     def play_explosion(self):
         # Применяем текущую громкость SFX перед воспроизведением
-        self.explosion_sound.set_volume(self.sfx_volume if hasattr(self, 'sfx_volume') else 0.5)
+        if hasattr(self, 'sfx_volume'):
+            self.explosion_sound.set_volume(self.sfx_volume)
         self.explosion_sound.play()
 
     def fade_out_music(self, duration=2000):
