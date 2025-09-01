@@ -1,11 +1,24 @@
 import pygame
 from utils.constants import *
+import os
 
 class Menu:
     def __init__(self, screen):
         self.screen = screen
-        self.font_large = pygame.font.SysFont("Verdana", 48)
-        self.font_medium = pygame.font.SysFont("Verdana", 36)
+        
+        # Определяем путь к шрифту
+        font_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'fonts', 'PressStart2P-Regular.ttf')
+        
+        # Проверяем, существует ли файл шрифта
+        if os.path.exists(font_path):
+            # Используем шрифт Press Start 2P
+            self.font_large = pygame.font.Font(font_path, 48)
+            self.font_medium = pygame.font.Font(font_path, 36)
+        else:
+            # Если шрифт не найден, используем системный шрифт
+            self.font_large = pygame.font.SysFont("Verdana", 48)
+            self.font_medium = pygame.font.SysFont("Verdana", 36)
+            
         self.selected_option = 0
         self.options = ["New Game", "Settings", "Exit"]
         

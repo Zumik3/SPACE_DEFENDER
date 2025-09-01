@@ -1,12 +1,24 @@
 import pygame
 from utils.constants import *
+import os
 
 class Settings:
     def __init__(self, screen, sound_manager):
         self.screen = screen
         self.sound_manager = sound_manager
-        self.font_large = pygame.font.SysFont("Verdana", 36)
-        self.font_medium = pygame.font.SysFont("Verdana", 24)
+        
+        # Определяем путь к шрифту
+        font_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'fonts', 'PressStart2P-Regular.ttf')
+        
+        # Проверяем, существует ли файл шрифта
+        if os.path.exists(font_path):
+            # Используем шрифт Press Start 2P
+            self.font_large = pygame.font.Font(font_path, 36)
+            self.font_medium = pygame.font.Font(font_path, 24)
+        else:
+            # Если шрифт не найден, используем системный шрифт
+            self.font_large = pygame.font.SysFont("Verdana", 36)
+            self.font_medium = pygame.font.SysFont("Verdana", 24)
         
         # Значения по умолчанию
         self.music_volume = 0.5
