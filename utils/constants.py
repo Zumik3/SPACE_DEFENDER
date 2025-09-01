@@ -1,4 +1,5 @@
 import pygame
+import os
 
 # Настройки экрана и стиля
 PIXEL_SIZE = 4
@@ -65,6 +66,17 @@ restart_font = None
 def init_fonts():
     global score_font, game_over_font, restart_font
     if score_font is None:
-        score_font = pygame.font.SysFont("Verdana", SCORE_FONT_SIZE)
-        game_over_font = pygame.font.SysFont("Verdana", GAME_OVER_FONT_SIZE)
-        restart_font = pygame.font.SysFont("Verdana", RESTART_FONT_SIZE)
+        # Определяем путь к шрифту
+        font_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'fonts', 'PressStart2P-Regular.ttf')
+        
+        # Проверяем, существует ли файл шрифта
+        if os.path.exists(font_path):
+            # Используем шрифт Press Start 2P
+            score_font = pygame.font.Font(font_path, SCORE_FONT_SIZE)
+            game_over_font = pygame.font.Font(font_path, GAME_OVER_FONT_SIZE)
+            restart_font = pygame.font.Font(font_path, RESTART_FONT_SIZE)
+        else:
+            # Если шрифт не найден, используем системный шрифт
+            score_font = pygame.font.SysFont("Verdana", SCORE_FONT_SIZE)
+            game_over_font = pygame.font.SysFont("Verdana", GAME_OVER_FONT_SIZE)
+            restart_font = pygame.font.SysFont("Verdana", RESTART_FONT_SIZE)
