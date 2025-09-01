@@ -16,14 +16,15 @@ class PixelTitle:
         scale_factor = 0.8
         new_width = int(self.original_width * scale_factor)
         new_height = int(self.original_height * scale_factor)
-        self.title_image = pygame.transform.scale(self.title_image, (new_width, new_height))
         
-        # Если изображение все еще шире экрана, масштабируем его
+        # Если изображение все еще шире экрана, масштабируем его до ширины экрана
         if new_width > screen_width:
             scale_factor = screen_width / new_width
-            final_width = int(new_width * scale_factor)
-            final_height = int(new_height * scale_factor)
-            self.title_image = pygame.transform.scale(self.title_image, (final_width, final_height))
+            new_width = int(new_width * scale_factor)
+            new_height = int(new_height * scale_factor)
+        
+        # Применяем финальное масштабирование
+        self.title_image = pygame.transform.scale(self.title_image, (new_width, new_height))
         
         # Получаем финальные размеры изображения
         self.width = self.title_image.get_width()
