@@ -239,6 +239,8 @@ class Game:
     def start_level(self):
         """Единая точка запуска уровня"""
         self.renderer.prepare_starfield()
+        # Восстанавливаем громкость музыки из настроек перед запуском
+        self.sound_manager.set_music_volume(self.sound_manager.music_volume)
         self.sound_manager.play_music()
         pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
         pygame.time.set_timer(ENEMY_SPAWN_EVENT, ENEMY_SPAWN_DELAY)
