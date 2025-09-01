@@ -12,9 +12,10 @@ class Menu:
     def draw(self):
         self.screen.fill(black)
         
-        # Рисуем пиксельное название игры (два слова по центру, выше меню)
-        title_y = screen_height // 2 - 150
-        self.pixel_title.draw(self.screen, 0, title_y)
+        # Рисуем пиксельное название игры (по центру горизонтали, на фиксированной высоте)
+        title_x = 0  # Будет центрировано внутри PixelTitle
+        title_y = 50  # Фиксированная позиция сверху
+        self.pixel_title.draw(self.screen, title_x, title_y)
         
         # Рисуем пункты меню
         for i, option in enumerate(self.options):
