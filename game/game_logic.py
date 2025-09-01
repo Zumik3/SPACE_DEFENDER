@@ -9,7 +9,8 @@ from core.powerup import Powerup
 from utils.constants import *
 
 class Game:
-    def __init__(self):
+    def __init__(self, sound_manager=None):
+        self.sound_manager = sound_manager
         self.reset_game()
         self.game_over = False
 
@@ -17,7 +18,9 @@ class Game:
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.renderer = Renderer(self.screen)
-        self.sound_manager = SoundManager()
+        # Используем переданный sound_manager или создаем новый
+        if self.sound_manager is None:
+            self.sound_manager = SoundManager()
 
     def reset_game(self):
         self.score = 0
@@ -32,8 +35,6 @@ class Game:
         self.shoot_delay = PLAYER_SHOOT_DELAY
         if hasattr(self, 'renderer'):
             self.renderer.prepare_starfield()
-        if hasattr(self, 'sound_manager'):
-            self.sound_manager.play_music()
 
     def add_powerup(self, type, x, y):
         # Этот метод больше не нужен, так как мы используем новый подход к бонусам
@@ -45,14 +46,17 @@ class Game:
         # Создаем поверхность для затухания
         fade_surface = pygame.Surface((screen_width, screen_height))
         fade_surface.fill((0, 0, 0))
+        
+        # Получаем текущую громкость музыки
+        start_volume = self.sound_manager.get_music_volume()
 
         while pygame.time.get_ticks() - fade_start_time < fade_duration:
             # Вычисляем прогресс затухания (от 0 до 1)
             progress = (pygame.time.get_ticks() - fade_start_time) / fade_duration
             alpha = int(progress * 255)  # От 0 до 255
 
-            # Уменьшаем громкость музыки пропорционально прогрессу
-            self.sound_manager.set_music_volume(1.0 - progress)
+            # Уменьшаем громкость музыки пропорционально прогрессу от текущей громкости
+            self.sound_manager.set_music_volume(start_volume * (1.0 - progress))
 
             # Рисуем затемнение
             fade_surface.set_alpha(alpha)
