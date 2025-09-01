@@ -7,10 +7,14 @@ from core.enemy import Enemy
 from core.bullet import Bullet
 from core.powerup import Powerup
 from utils.constants import *
+from game.object_pool import ObjectPool
+from core.enemy_factory import EnemyFactory
 
 class Game:
     def __init__(self, sound_manager=None):
         self.sound_manager = sound_manager
+        self.object_pool = ObjectPool()
+        self.enemy_factory = EnemyFactory()
         self.reset_game()
         self.game_over = False
 
@@ -42,24 +46,30 @@ class Game:
         pass
 
     def fade_out(self, duration=2000):
+        """Одновременное затухание музыки и экрана"""
+        if not self.sound_manager or not hasattr(self, 'renderer') or not hasattr(self, 'clock') or not self.renderer:
+            return
+            
         fade_start_time = pygame.time.get_ticks()
         fade_duration = duration
+        
+        # Получаем начальную громкость музыки
+        start_volume = self.sound_manager.get_music_volume()
+        
         # Создаем поверхность для затухания
         fade_surface = pygame.Surface((screen_width, screen_height))
         fade_surface.fill((0, 0, 0))
-        
-        # Получаем текущую громкость музыки
-        start_volume = self.sound_manager.get_music_volume()
 
         while pygame.time.get_ticks() - fade_start_time < fade_duration:
             # Вычисляем прогресс затухания (от 0 до 1)
             progress = (pygame.time.get_ticks() - fade_start_time) / fade_duration
-            alpha = int(progress * 255)  # От 0 до 255
-
-            # Уменьшаем громкость музыки пропорционально прогрессу от текущей громкости
-            self.sound_manager.set_music_volume(start_volume * (1.0 - progress))
-
-            # Рисуем затемнение
+            
+            # Уменьшаем громкость музыки пропорционально прогрессу
+            current_music_volume = start_volume * (1.0 - progress)
+            self.sound_manager.set_music_volume(current_music_volume)
+            
+            # Рисуем затемнение экрана
+            alpha = int(progress * 255)
             fade_surface.set_alpha(alpha)
             self.screen.blit(fade_surface, (0, 0))
             pygame.display.update()
@@ -67,8 +77,8 @@ class Game:
 
         # Полностью останавливаем музыку
         self.sound_manager.stop_music()
-        # Сбрасываем громкость музыки, чтобы при следующем запуске она была правильной
-        self.sound_manager.set_music_volume(self.sound_manager.music_volume)
+        # Восстанавливаем исходную громкость для следующего запуска
+        self.sound_manager.set_music_volume(start_volume)
 
     def update(self):
         self.player.update()
@@ -85,7 +95,8 @@ class Game:
             if enemy.type == 'normal' and enemy.rect.y < screen_height * (2/3) and random.random() < 0.001:
                 start_pos = pygame.math.Vector2(enemy.rect.centerx, enemy.rect.bottom)
                 vel = (0, ENEMY_NORMAL_SPEED)
-                bullet = Bullet.enemy_bullet(start_pos, pygame.math.Vector2(vel), size=4)
+                # Используем пул объектов для создания пуль
+                bullet = self.object_pool.get_bullet(start_pos.x, start_pos.y, vel[1], enemy_bullet_color, vel[0], 4, 4)
                 self.enemy_bullets.add(bullet)
 
         # Check collisions between player and enemies
@@ -95,6 +106,9 @@ class Game:
                 self.player_lives -= 1
                 self.player.make_invincible()
                 self.sound_manager.play_explosion()
+                # Возвращаем врага в пул
+                if enemy.active:
+                    self.object_pool.return_enemy(enemy)
                 if self.player_lives <= 0:
                     self.game_over = True
 
@@ -104,6 +118,9 @@ class Game:
             for bullet in bullet_hits:
                 self.player_lives -= 1
                 self.player.make_invincible()
+                # Возвращаем пулю в пул
+                if bullet.active:
+                    self.object_pool.return_bullet(bullet)
                 if self.player_lives <= 0:
                     self.game_over = True
 
@@ -127,6 +144,12 @@ class Game:
                         self.powerups.add(powerup)
                     self.score += enemy.get_score()
                     self.sound_manager.play_explosion()
+                    # Возвращаем врага в пул
+                    if enemy.active:
+                        self.object_pool.return_enemy(enemy)
+                # Возвращаем пулю в пул
+                if bullet.active:
+                    self.object_pool.return_bullet(bullet)
 
     def draw(self):
         self.screen.fill(black)
@@ -153,11 +176,20 @@ class Game:
                 pygame.quit()
                 quit()
             elif event.type == PLAYER_SHOOT_EVENT:
-                bullet = Bullet.player_bullet(self.player.rect)
+                # Используем пул объектов для создания пуль игрока
+                bullet = self.object_pool.get_bullet(
+                    self.player.rect.centerx - 2, 
+                    self.player.rect.top, 
+                    -bullet_speed, 
+                    bullet_color, 
+                    0, 
+                    4, 
+                    10
+                )
                 self.bullets.add(bullet)
                 self.sound_manager.play_shoot()
             elif event.type == ENEMY_SPAWN_EVENT:
-                enemy = Enemy.create_random(screen_width)
+                enemy = self.enemy_factory.create_random_enemy(screen_width)
                 self.enemies.add(enemy)
             elif event.type == ENEMY_SHOOT_EVENT:
                 strong_enemies_on_screen = [e for e in self.enemies if e.type == 'strong' and e.rect.y < screen_height * (2/3)]
@@ -168,7 +200,8 @@ class Game:
                     if (target_pos - start_pos).length() > 0:
                         direction = (target_pos - start_pos).normalize()
                         vel = direction * enemy_bullet_speed
-                        bullet = Bullet.enemy_bullet(start_pos, vel)
+                        # Используем пул объектов для создания пуль врагов
+                        bullet = self.object_pool.get_bullet(start_pos.x, start_pos.y, vel.y, enemy_bullet_color, vel.x, 6, 6)
                         self.enemy_bullets.add(bullet)
 
     def handle_keys(self):
@@ -178,73 +211,16 @@ class Game:
         if keys[pygame.K_RIGHT]:
             self.player.move(player_speed)
 
-    def run(self, screen):
-        self.init_pygame(screen)
-        # Игровой цикл
-        self.start_level()
-        
-        # Game Over Screen
-        self.fade_out()
-        # self.screen.fill(black)
-        
-        game_over_text = game_over_font.render("GAME OVER", True, white)
-        final_score_text = score_font.render(f"Final Score: {self.score}", True, white)
-        
-        # Пункты меню
-        menu_options = ["Restart Game", "Main Menu"]
-        selected_option = 0
-        
-        # Функция для отображения меню
-        def draw_menu():
-            self.screen.fill(black)
-            self.screen.blit(game_over_text, game_over_text.get_rect(center=(screen_width/2, screen_height/2 - 80)))
-            self.screen.blit(final_score_text, final_score_text.get_rect(center=(screen_width/2, screen_height/2 - 20)))
-            
-            # Отображаем пункты меню
-            for i, option in enumerate(menu_options):
-                color = (255, 255, 0) if i == selected_option else white  # Желтый для выбранного пункта
-                text = menu_item_font.render(option, True, color)
-                text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + 30 + i * 40))
-                self.screen.blit(text, text_rect)
-                
-            pygame.display.update()
-        
-        # Отображаем начальное меню
-        draw_menu()
-
-        # Wait for menu selection
-        waiting_for_selection = True
-        while waiting_for_selection:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        selected_option = (selected_option - 1) % len(menu_options)
-                        draw_menu()
-                    elif event.key == pygame.K_DOWN:
-                        selected_option = (selected_option + 1) % len(menu_options)
-                        draw_menu()
-                    elif event.key == pygame.K_RETURN:
-                        if selected_option == 0:  # Restart Game
-                            waiting_for_selection = False
-                            self.reset_game()
-                            self.start_level()
-                            # После завершения уровня возвращаемся к меню Game Over
-                            # Вместо рекурсивного вызова, просто продолжаем цикл
-                            return True  # Индикатор перезапуска
-                        elif selected_option == 1:  # Main Menu
-                            waiting_for_selection = False
-                            return False  # Индикатор выхода в главное меню
-                            
     def start_level(self):
         """Единая точка запуска уровня"""
         self.renderer.prepare_starfield()
         # Восстанавливаем громкость музыки из настроек перед запуском
         # Убеждаемся, что громкость установлена правильно
-        self.sound_manager.set_music_volume(self.sound_manager.music_volume)
-        self.sound_manager.play_music()
+        if self.sound_manager:
+            # Устанавливаем громкость из настроек
+            if hasattr(self.sound_manager, 'music_volume'):
+                self.sound_manager.set_music_volume(self.sound_manager.music_volume)
+            self.sound_manager.play_music()
         pygame.time.set_timer(PLAYER_SHOOT_EVENT, self.shoot_delay)
         pygame.time.set_timer(ENEMY_SPAWN_EVENT, ENEMY_SPAWN_DELAY)
         pygame.time.set_timer(ENEMY_SHOOT_EVENT, ENEMY_SHOOT_DELAY)

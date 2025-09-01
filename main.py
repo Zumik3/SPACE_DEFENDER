@@ -8,15 +8,17 @@ from game import Game
 from ui.menu import Menu
 from ui.settings import Settings
 from utils.sound_manager import SoundManager
+from utils.settings_manager import SettingsManager
 
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("Star Game")
     
-    sound_manager = SoundManager()
+    settings_manager = SettingsManager()
+    sound_manager = SoundManager(settings_manager)
     menu = Menu(screen)
-    settings = Settings(screen, sound_manager)
+    settings = Settings(screen, sound_manager, settings_manager)
     
     # Показываем меню
     in_menu = True

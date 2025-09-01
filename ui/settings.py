@@ -3,13 +3,22 @@ from utils.constants import *
 import os
 
 class Settings:
-    def __init__(self, screen, sound_manager):
+    def __init__(self, screen, sound_manager, settings_manager=None):
         self.screen = screen
         self.sound_manager = sound_manager
+        self.settings_manager = settings_manager
         
-        # Значения по умолчанию
-        self.music_volume = 0.5
-        self.sfx_volume = 0.5
+        # Значения из настроек или по умолчанию
+        if self.settings_manager:
+            self.music_volume = self.settings_manager.get("music_volume", 0.5)
+            self.sfx_volume = self.settings_manager.get("sfx_volume", 0.5)
+        else:
+            self.music_volume = 0.5
+            self.sfx_volume = 0.5
+        
+        # Округляем значения до 2 знаков после запятой
+        self.music_volume = round(self.music_volume, 2)
+        self.sfx_volume = round(self.sfx_volume, 2)
         
         # Выбранный пункт настроек
         self.selected_option = 0
@@ -74,12 +83,21 @@ class Settings:
         # Ограничиваем значение между 0 и 1
         if self.selected_option == 0:  # Music Volume
             self.music_volume = max(0, min(1, self.music_volume + delta))
+            # Округляем до 2 знаков после запятой
+            self.music_volume = round(self.music_volume, 2)
             self.sound_manager.set_music_volume(self.music_volume)
         elif self.selected_option == 1:  # SFX Volume
             self.sfx_volume = max(0, min(1, self.sfx_volume + delta))
+            # Округляем до 2 знаков после запятой
+            self.sfx_volume = round(self.sfx_volume, 2)
             self.sound_manager.set_sfx_volume(self.sfx_volume)
         
     def apply_settings(self):
         # Применяем настройки громкости
         self.sound_manager.set_music_volume(self.music_volume)
         self.sound_manager.set_sfx_volume(self.sfx_volume)
+        
+        # Сохраняем настройки, если есть SettingsManager
+        if self.settings_manager:
+            self.settings_manager.set("music_volume", self.music_volume)
+            self.settings_manager.set("sfx_volume", self.sfx_volume)

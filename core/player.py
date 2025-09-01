@@ -1,7 +1,8 @@
 import pygame
 from utils.constants import player_width, player_height, screen_width, screen_height
+from core.game_object import GameObject
 
-class Player(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite, GameObject):
     def __init__(self, x, y):
         super().__init__()
         # Создаем изображение для спрайта (временно пустая поверхность)
@@ -26,3 +27,9 @@ class Player(pygame.sprite.Sprite):
 
     def draw(self, renderer):
         renderer.draw_player_ship(self.rect)
+        
+    def get_rect(self):
+        return self.rect
+        
+    def is_active(self):
+        return True
