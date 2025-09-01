@@ -26,7 +26,7 @@ class Settings:
         
         # Выбранный пункт настроек
         self.selected_option = 0
-        self.options = ["Music Volume", "SFX Volume"]
+        self.options = ["Music Volume", "SFX Volume", "Back to Menu"]
         
     def draw(self):
         self.screen.fill(black)
@@ -38,27 +38,20 @@ class Settings:
         
         # Рисуем пункты настроек
         for i, option in enumerate(self.options):
-            # Выделение выбранного пункта
-            color = (255, 255, 0) if i == self.selected_option else white  # Желтый цвет для выбранного пункта
-            text = self.font_medium.render(option, True, color)
-            text_rect = text.get_rect(center=(screen_width/2, screen_height/2 - 50 + i * 50))
-            self.screen.blit(text, text_rect)
-            
-            # Рисуем значение настройки
-            value = self.music_volume if i == 0 else self.sfx_volume
-            value_text = self.font_medium.render(f"{int(value * 100)}%", True, white)
-            value_rect = value_text.get_rect(center=(screen_width/2, screen_height/2 - 50 + i * 50 + 30))
-            self.screen.blit(value_text, value_rect)
-        
-        # Рисуем инструкцию
-        instruction_text = self.font_medium.render("UP/DOWN: Select option, LEFT/RIGHT: Adjust value", True, (150, 150, 150))
-        instruction_rect = instruction_text.get_rect(center=(screen_width/2, screen_height/2 + 100))
-        self.screen.blit(instruction_text, instruction_rect)
-        
-        # Рисуем кнопку возврата
-        back_text = self.font_medium.render("Press ESC to return", True, white)
-        back_rect = back_text.get_rect(center=(screen_width/2, screen_height/2 + 150))
-        self.screen.blit(back_text, back_rect)
+            if i == 2:  # Back to Menu
+                # Выделение выбранного пункта
+                color = (255, 255, 0) if i == self.selected_option else white
+                text = self.font_medium.render(option, True, color)
+                text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + i * 50))
+                self.screen.blit(text, text_rect)
+            else:  # Volume settings
+                # Выделение выбранного пункта
+                color = (255, 255, 0) if i == self.selected_option else white
+                # Формат: "Option Name: Value%"
+                value = self.music_volume if i == 0 else self.sfx_volume
+                text = self.font_medium.render(f"{option}: {int(value * 100)}%", True, color)
+                text_rect = text.get_rect(center=(screen_width/2, screen_height/2 - 50 + i * 50))
+                self.screen.blit(text, text_rect)
         
         pygame.display.update()
         
@@ -77,10 +70,16 @@ class Settings:
                     self.selected_option = (self.selected_option + 1) % len(self.options)
                 elif event.key == pygame.K_LEFT:
                     # Уменьшение значения выбранной настройки
-                    self.adjust_selected_option(-0.05)
+                    if self.selected_option < 2:  # Только для настроек громкости
+                        self.adjust_selected_option(-0.05)
                 elif event.key == pygame.K_RIGHT:
                     # Увеличение значения выбранной настройки
-                    self.adjust_selected_option(0.05)
+                    if self.selected_option < 2:  # Только для настроек громкости
+                        self.adjust_selected_option(0.05)
+                elif event.key == pygame.K_RETURN:
+                    # Выбор пункта меню
+                    if self.selected_option == 2:  # Back to Menu
+                        return "back"
                         
         return None
         
