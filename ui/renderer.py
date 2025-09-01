@@ -98,6 +98,7 @@ class Renderer:
 
     def draw_powerups(self, powerups):
         for powerup in powerups:
+            # Рисуем бонусы через их собственный метод draw
             powerup.draw(self.screen)
 
     def fade_out_display(self, duration=2000):

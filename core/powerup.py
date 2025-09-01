@@ -1,43 +1,103 @@
 import pygame
+import random
 from utils.constants import *
 
-class Powerup:
-    def __init__(self, x, y, powerup_type):
-        self.rect = pygame.Rect(x, y, POWERUP_SIZE, POWERUP_SIZE)
-        self.type = powerup_type
+class Powerup(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
         self.vel_y = POWERUP_SPEED
-        if self.type == 'health':
-            self.color = POWERUP_HEALTH_COLOR
-        elif self.type == 'fire_rate':
-            self.color = POWERUP_FIRE_COLOR
+        
+        # Создаем изображение для спрайта
+        self.image = pygame.Surface((POWERUP_SIZE, POWERUP_SIZE), pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        
+        # Рисуем бонус на изображении спрайта
+        self.draw_powerup()
 
     def update(self):
         self.rect.y += self.vel_y
+        
+        # Автоматическое удаление, если бонус вышел за экран
+        if self.rect.top > screen_height:
+            self.kill()
 
-    def draw(self, screen):
-        x, y = self.rect.x, self.rect.y
-        if self.type == 'health':
-            # Draw heart
-            self.draw_pixel(x + 3*PIXEL_SIZE, y + 8*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 5*PIXEL_SIZE, y + 8*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 2*PIXEL_SIZE, y + 9*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 4*PIXEL_SIZE, y + 9*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 6*PIXEL_SIZE, y + 9*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 3*PIXEL_SIZE, y + 10*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 5*PIXEL_SIZE, y + 10*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 4*PIXEL_SIZE, y + 11*PIXEL_SIZE, self.color, screen)
-        elif self.type == 'fire_rate':
-            # Draw speed arrow (vertical line with arrow head)
-            self.draw_pixel(x + 4*PIXEL_SIZE, y + 4*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 4*PIXEL_SIZE, y + 5*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 4*PIXEL_SIZE, y + 6*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 4*PIXEL_SIZE, y + 7*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 3*PIXEL_SIZE, y + 8*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 4*PIXEL_SIZE, y + 8*PIXEL_SIZE, self.color, screen)
-            self.draw_pixel(x + 5*PIXEL_SIZE, y + 8*PIXEL_SIZE, self.color, screen)
+    def draw_powerup(self):
+        # Этот метод должен быть переопределен в подклассах
+        pass
 
-    def draw_pixel(self, x, y, color, screen):
-        pygame.draw.rect(screen, color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
+    def apply_effect(self, game):
+        # Этот метод должен быть переопределен в подклассах
+        pass
 
-    def is_off_screen(self):
-        return self.rect.top > screen_height
+    @staticmethod
+    def drop_powerup(enemy, game):
+        """Метод для определения, какой бонус должен выпасть при убийстве врага"""
+        r = random.random()
+        health_chance = POWERUP_HEALTH_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_HEALTH_CHANCE_NORMAL
+        fire_chance = POWERUP_FIRE_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_FIRE_CHANCE_NORMAL
+        
+        if r < health_chance:
+            x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
+            return HealthPowerup(x_spawn, enemy.rect.centery - 10)
+        elif r < health_chance + fire_chance:
+            x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
+            return FireRatePowerup(x_spawn, enemy.rect.centery - 10)
+        
+        return None
+
+
+class HealthPowerup(Powerup):
+    def __init__(self, x, y):
+        self.color = POWERUP_HEALTH_COLOR
+        super().__init__(x, y)
+
+    def draw_powerup(self):
+        # Очищаем поверхность
+        self.image.fill((0, 0, 0, 0))  # Прозрачный фон
+        
+        # Draw heart (размер 5x4 пикселя, масштабированных в PIXEL_SIZE раз)
+        self.draw_pixel(2*PIXEL_SIZE, 1*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 1*PIXEL_SIZE)
+        self.draw_pixel(1*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(2*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(5*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(2*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 4*PIXEL_SIZE)
+
+    def draw_pixel(self, x, y):
+        pygame.draw.rect(self.image, self.color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
+
+    def apply_effect(self, game):
+        game.player_lives += 1
+
+
+class FireRatePowerup(Powerup):
+    def __init__(self, x, y):
+        self.color = POWERUP_FIRE_COLOR
+        super().__init__(x, y)
+
+    def draw_powerup(self):
+        # Очищаем поверхность
+        self.image.fill((0, 0, 0, 0))  # Прозрачный фон
+        
+        # Draw speed arrow (вертикальная линия с наконечником)
+        self.draw_pixel(3*PIXEL_SIZE, 1*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 4*PIXEL_SIZE)
+        self.draw_pixel(2*PIXEL_SIZE, 5*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 5*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 5*PIXEL_SIZE)
+
+    def draw_pixel(self, x, y):
+        pygame.draw.rect(self.image, self.color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
+
+    def apply_effect(self, game):
+        game.shoot_delay = max(100, game.shoot_delay - FIRE_RATE_BOOST)
+        pygame.time.set_timer(PLAYER_SHOOT_EVENT, game.shoot_delay)

@@ -1,28 +1,27 @@
 import pygame
 from utils.constants import screen_width, screen_height
 
-class Bullet:
+class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, vel_y, color, vel_x=0, width=4, height=10):
-        self.rect = pygame.Rect(x, y, width, height)
+        super().__init__()
+        self.image = pygame.Surface((width, height))
+        self.image.fill(color)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
         self.vel_x = vel_x
         self.vel_y = vel_y
-        self.color = color
 
     def update(self):
         self.rect.x += self.vel_x
         self.rect.y += self.vel_y
-
-    def is_off_screen(self):
-        return (self.rect.bottom < 0 or
-                self.rect.right < 0 or
-                self.rect.left > screen_width or
-                self.rect.top > screen_height)
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)
-
-    def collides_with(self, other_rect):
-        return self.rect.colliderect(other_rect)
+        
+        # Автоматическое удаление, если пуля вышла за экран
+        if (self.rect.bottom < 0 or 
+            self.rect.right < 0 or 
+            self.rect.left > screen_width or 
+            self.rect.top > screen_height):
+            self.kill()
 
     @classmethod
     def player_bullet(cls, player_rect):

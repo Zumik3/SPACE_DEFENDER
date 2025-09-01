@@ -3,23 +3,35 @@ from utils.constants import enemy_strong_width, enemy_strong_height, enemy_norma
 import random
 import math
 
-class Enemy:
+class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, enemy_type):
-        if enemy_type == 'strong':
+        super().__init__()
+        self.type = enemy_type
+        
+        if self.type == 'strong':
             width, height = enemy_strong_width, enemy_strong_height
-            health = 1
+            health = 4  # Большие враги имеют 4 жизни
         else:
             width, height = enemy_normal_width, enemy_normal_height
-            health = 1
-        self.rect = pygame.Rect(x, y, width, height)
+            health = 2  # Маленькие враги имеют 2 жизни
+            
+        # Создаем изображение для спрайта (временно пустая поверхность)
+        self.image = pygame.Surface((width, height), pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
         self.health = health
-        self.type = enemy_type
         self.shoot_counter = random.randint(0, 29)  # for staggering
 
     def update(self):
         self.rect.y += enemy_speed
+        
+        # Автоматическое удаление, если враг вышел за экран
+        if self.rect.top > screen_height:
+            self.kill()
 
     def draw(self, renderer):
+        # Переопределяем отрисовку, чтобы использовать методы рендерера
         if self.type == 'strong':
             renderer.draw_strong_enemy(self.rect)
         else:
@@ -30,20 +42,10 @@ class Enemy:
         return self.health <= 0
 
     def get_score(self):
-        return 3 if self.type == 'strong' else 1
-
-    def is_off_screen(self):
-        return self.rect.top > screen_height
-
-    def shoot(self, player_rect):
-        if self.type == 'strong':
-            start_pos = pygame.math.Vector2(self.rect.center)
-            target_pos = pygame.math.Vector2(player_rect.center)
-            if (target_pos - start_pos).length() > 0:
-                direction = (target_pos - start_pos).normalize()
-                vel = direction * 6  # enemy_bullet_speed
-                return {'rect': pygame.Rect(start_pos.x, start_pos.y, 6, 6), 'vel': vel}
-        return None
+        # Возвращаем очки за убитого врага
+        # За сильного врага (4 жизни) - 12 очков (3 за жизнь)
+        # За обычного врага (2 жизни) - 2 очка (1 за жизнь)
+        return 12 if self.type == 'strong' else 2
 
     @classmethod
     def create_random(cls, screen_width):
