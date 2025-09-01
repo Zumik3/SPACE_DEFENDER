@@ -196,10 +196,6 @@ class Game:
         self.fade_out()
         # self.screen.fill(black)
         
-        # Создаем шрифты для экрана Game Over
-        game_over_font = pygame.font.Font(None, 48)  # Уменьшаем размер шрифта
-        option_font = pygame.font.Font(None, 24)
-        
         game_over_text = game_over_font.render("GAME OVER", True, white)
         final_score_text = score_font.render(f"Final Score: {self.score}", True, white)
         
@@ -216,7 +212,7 @@ class Game:
             # Отображаем пункты меню
             for i, option in enumerate(menu_options):
                 color = (255, 255, 0) if i == selected_option else white  # Желтый для выбранного пункта
-                text = option_font.render(option, True, color)
+                text = menu_item_font.render(option, True, color)
                 text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + 30 + i * 40))
                 self.screen.blit(text, text_rect)
                 

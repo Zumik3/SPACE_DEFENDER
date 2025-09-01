@@ -7,19 +7,6 @@ class Settings:
         self.screen = screen
         self.sound_manager = sound_manager
         
-        # Определяем путь к шрифту
-        font_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'fonts', 'PressStart2P-Regular.ttf')
-        
-        # Проверяем, существует ли файл шрифта
-        if os.path.exists(font_path):
-            # Используем шрифт Press Start 2P
-            self.font_large = pygame.font.Font(font_path, 36)
-            self.font_medium = pygame.font.Font(font_path, 24)
-        else:
-            # Если шрифт не найден, используем системный шрифт
-            self.font_large = pygame.font.SysFont("Verdana", 36)
-            self.font_medium = pygame.font.SysFont("Verdana", 24)
-        
         # Значения по умолчанию
         self.music_volume = 0.5
         self.sfx_volume = 0.5
@@ -32,7 +19,7 @@ class Settings:
         self.screen.fill(black)
         
         # Рисуем заголовок
-        title_text = self.font_large.render("SETTINGS", True, white)
+        title_text = settings_title_font.render("SETTINGS", True, white)
         title_rect = title_text.get_rect(center=(screen_width/2, screen_height/2 - 150))
         self.screen.blit(title_text, title_rect)
         
@@ -41,7 +28,7 @@ class Settings:
             if i == 2:  # Back to Menu
                 # Выделение выбранного пункта
                 color = (255, 255, 0) if i == self.selected_option else white
-                text = self.font_medium.render(option, True, color)
+                text = settings_item_font.render(option, True, color)
                 text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + i * 50))
                 self.screen.blit(text, text_rect)
             else:  # Volume settings
@@ -49,7 +36,7 @@ class Settings:
                 color = (255, 255, 0) if i == self.selected_option else white
                 # Формат: "Option Name: Value%"
                 value = self.music_volume if i == 0 else self.sfx_volume
-                text = self.font_medium.render(f"{option}: {int(value * 100)}%", True, color)
+                text = settings_item_font.render(f"{option}: {int(value * 100)}%", True, color)
                 text_rect = text.get_rect(center=(screen_width/2, screen_height/2 - 50 + i * 50))
                 self.screen.blit(text, text_rect)
         
