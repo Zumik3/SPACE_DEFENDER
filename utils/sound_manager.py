@@ -27,6 +27,8 @@ class SoundManager:
         self.set_sfx_volume(self.sfx_volume)
 
     def play_music(self, loops=-1):
+        # Устанавливаем текущую громкость перед воспроизведением
+        self.set_music_volume(self.music_volume if hasattr(self, 'music_volume') else 0.5)
         self.music_sound.play(loops)
 
     def stop_music(self):

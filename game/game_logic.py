@@ -35,6 +35,7 @@ class Game:
         self.shoot_delay = PLAYER_SHOOT_DELAY
         if hasattr(self, 'renderer'):
             self.renderer.prepare_starfield()
+        # Не включаем музыку здесь, она включается в методе run
 
     def add_powerup(self, type, x, y):
         # Этот метод больше не нужен, так как мы используем новый подход к бонусам
@@ -239,6 +240,8 @@ class Game:
                         if selected_option == 0:  # Restart Game
                             waiting_for_selection = False
                             self.reset_game()
+                            # Включаем музыку при перезапуске
+                            self.sound_manager.play_music()
                             self.run(screen)
                         elif selected_option == 1:  # Main Menu
                             waiting_for_selection = False
