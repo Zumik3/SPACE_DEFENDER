@@ -41,10 +41,18 @@ class Powerup(pygame.sprite.Sprite, GameObject):
         
         if r < health_chance:
             x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
-            return HealthPowerup(x_spawn, enemy.rect.centery - 10)
+            # Создаем бонус через ObjectPoolManager
+            if game.object_pool_manager:
+                return game.object_pool_manager.get_object('powerup', 'health', x_spawn, enemy.rect.centery - 10)
+            else:
+                return HealthPowerup(x_spawn, enemy.rect.centery - 10)
         elif r < health_chance + fire_chance:
             x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
-            return FireRatePowerup(x_spawn, enemy.rect.centery - 10)
+            # Создаем бонус через ObjectPoolManager
+            if game.object_pool_manager:
+                return game.object_pool_manager.get_object('powerup', 'fire_rate', x_spawn, enemy.rect.centery - 10)
+            else:
+                return FireRatePowerup(x_spawn, enemy.rect.centery - 10)
         
         return None
         
@@ -85,7 +93,10 @@ class HealthPowerup(Powerup):
         pygame.draw.rect(self.image, self.color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
 
     def apply_effect(self, game):
-        game.player_lives += 1
+        if game.state_manager:
+            # Увеличиваем количество жизней через GameStateManager
+            current_lives = game.state_manager.get_lives()
+            game.state_manager.player_lives = current_lives + 1
 
 
 class FireRatePowerup(Powerup):
@@ -110,5 +121,6 @@ class FireRatePowerup(Powerup):
         pygame.draw.rect(self.image, self.color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
 
     def apply_effect(self, game):
-        game.shoot_delay = max(100, game.shoot_delay - FIRE_RATE_BOOST)
-        pygame.time.set_timer(PLAYER_SHOOT_EVENT, game.shoot_delay)
+        if game.state_manager:
+            game.shoot_delay = max(100, game.shoot_delay - FIRE_RATE_BOOST)
+            pygame.time.set_timer(PLAYER_SHOOT_EVENT, game.shoot_delay)

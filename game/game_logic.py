@@ -14,9 +14,14 @@ class Game:
     def __init__(self, sound_manager=None):
         self.sound_manager = sound_manager
         # Объекты пула и фабрика теперь передаются извне
-        self.object_pool = None
+        self.object_pool_manager = None
         self.enemy_factory = None
         self.renderer = None
+        # Добавляем новые компоненты
+        self.state_manager = None
+        self.event_handler = None
+        self.game_renderer = None
+        self.event_manager = None
         self.reset_game()
         self.game_over = False
 
@@ -30,11 +35,15 @@ class Game:
         #     self.sound_manager = SoundManager()
 
     def reset_game(self):
-        self.score = 0
-        self.player_lives = 3
+        if self.state_manager:
+            self.state_manager.reset()
         x = (screen_width - player_width) // 2
         y = screen_height - player_height - 10
-        self.player = Player(x, y)
+        # Создаем игрока через ObjectPoolManager
+        if self.object_pool_manager:
+            self.player = self.object_pool_manager.get_object('player', x, y)
+        else:
+            self.player = Player(x, y)
         self.bullets = pygame.sprite.Group()
         self.enemy_bullets = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
@@ -100,39 +109,59 @@ class Game:
                 start_pos = pygame.math.Vector2(enemy.rect.centerx, enemy.rect.bottom)
                 vel = (0, ENEMY_NORMAL_SPEED)
                 # Используем пул объектов для создания пуль
-                bullet = self.object_pool.get_bullet(start_pos.x, start_pos.y, vel[1], enemy_bullet_color, vel[0], 4, 4)
+                bullet = self.object_pool_manager.get_object(
+                    'bullet',
+                    start_pos.x, 
+                    start_pos.y, 
+                    vel[1], 
+                    enemy_bullet_color, 
+                    vel[0], 
+                    4, 
+                    4
+                )
                 self.enemy_bullets.add(bullet)
 
         # Check collisions between player and enemies
         if not self.player.invincible:
             enemy_hits = pygame.sprite.spritecollide(self.player, self.enemies, True)
             for enemy in enemy_hits:
-                self.player_lives -= 1
-                self.player.make_invincible()
-                self.sound_manager.play_explosion()
-                # Возвращаем врага в пул
-                if enemy.active:
-                    self.object_pool.return_enemy(enemy)
-                if self.player_lives <= 0:
-                    self.game_over = True
+                if self.state_manager:
+                    game_over = self.state_manager.lose_life()
+                    self.player.make_invincible()
+                    self.sound_manager.play_explosion()
+                    # Возвращаем врага в пул
+                    if enemy.active and self.object_pool_manager:
+                        self.object_pool_manager.return_object('enemy', enemy)
+                    if game_over:
+                        self.game_over = True
+                        # Уведомляем подписчиков об окончании игры
+                        if self.event_manager:
+                            self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
 
         # Check collisions between player and enemy bullets
         if not self.player.invincible:
             bullet_hits = pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)
             for bullet in bullet_hits:
-                self.player_lives -= 1
-                self.player.make_invincible()
-                # Возвращаем пулю в пул
-                if bullet.active:
-                    self.object_pool.return_bullet(bullet)
-                if self.player_lives <= 0:
-                    self.game_over = True
+                if self.state_manager:
+                    game_over = self.state_manager.lose_life()
+                    self.player.make_invincible()
+                    # Возвращаем пулю в пул
+                    if bullet.active and self.object_pool_manager:
+                        self.object_pool_manager.return_object('bullet', bullet)
+                    if game_over:
+                        self.game_over = True
+                        # Уведомляем подписчиков об окончании игры
+                        if self.event_manager:
+                            self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
 
         # Check collisions between player and powerups
         powerup_hits = pygame.sprite.spritecollide(self.player, self.powerups, True)
         for powerup in powerup_hits:
             self.sound_manager.play_explosion()
             powerup.apply_effect(self)
+            # Уведомляем подписчиков о получении бонуса
+            if self.event_manager:
+                self.event_manager.notify("powerup_collected", {"type": type(powerup).__name__})
 
         # Check collisions between player bullets and enemies
         bullet_hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, False)
@@ -146,74 +175,49 @@ class Game:
                     powerup = Powerup.drop_powerup(enemy, self)
                     if powerup:
                         self.powerups.add(powerup)
-                    self.score += enemy.get_score()
+                    if self.state_manager:
+                        self.state_manager.update_score(enemy.get_score())
+                        # Уведомляем подписчиков об изменении счета
+                        if self.event_manager:
+                            self.event_manager.notify("score_updated", {"score": self.state_manager.get_score()})
                     self.sound_manager.play_explosion()
                     # Возвращаем врага в пул
-                    if enemy.active:
-                        self.object_pool.return_enemy(enemy)
+                    if enemy.active and self.object_pool_manager:
+                        self.object_pool_manager.return_object('enemy', enemy)
                 # Возвращаем пулю в пул
-                if bullet.active:
-                    self.object_pool.return_bullet(bullet)
+                if bullet.active and self.object_pool_manager:
+                    self.object_pool_manager.return_object('bullet', bullet)
 
     def draw(self):
-        self.screen.fill(black)
-        self.renderer.draw_starfield()
-        
-        if not self.player.invincible or (pygame.time.get_ticks() // 200) % 2 == 0:
-            self.renderer.draw_player_ship(self.player.rect)
-        # Рисуем врагов через рендерер
-        for enemy in self.enemies:
-            enemy.draw(self.renderer)
-        # Рисуем бонусы
-        self.powerups.draw(self.screen)
-        # Рисуем пули игрока
-        self.bullets.draw(self.screen)
-        # Рисуем пули врагов
-        self.enemy_bullets.draw(self.screen)
-        self.renderer.draw_score(self.score)
-        self.renderer.draw_lives(self.player_lives)
-        pygame.display.update()
+        if self.game_renderer and self.state_manager:
+            self.game_renderer.draw_game(
+                self.player,
+                self.bullets,
+                self.enemy_bullets,
+                self.enemies,
+                self.powerups,
+                self.state_manager.get_score(),
+                self.state_manager.get_lives(),
+                self.player.invincible
+            )
 
     def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            elif event.type == PLAYER_SHOOT_EVENT:
-                # Используем пул объектов для создания пуль игрока
-                bullet = self.object_pool.get_bullet(
-                    self.player.rect.centerx - 2, 
-                    self.player.rect.top, 
-                    -bullet_speed, 
-                    bullet_color, 
-                    0, 
-                    4, 
-                    10
-                )
-                self.bullets.add(bullet)
-                self.sound_manager.play_shoot()
-            elif event.type == ENEMY_SPAWN_EVENT:
-                enemy = self.enemy_factory.create_random_enemy(screen_width)
-                self.enemies.add(enemy)
-            elif event.type == ENEMY_SHOOT_EVENT:
-                strong_enemies_on_screen = [e for e in self.enemies if e.type == 'strong' and e.rect.y < screen_height * (2/3)]
-                if strong_enemies_on_screen:
-                    shooter = random.choice(strong_enemies_on_screen)
-                    start_pos = pygame.math.Vector2(shooter.rect.center)
-                    target_pos = pygame.math.Vector2(self.player.rect.center)
-                    if (target_pos - start_pos).length() > 0:
-                        direction = (target_pos - start_pos).normalize()
-                        vel = direction * enemy_bullet_speed
-                        # Используем пул объектов для создания пуль врагов
-                        bullet = self.object_pool.get_bullet(start_pos.x, start_pos.y, vel.y, enemy_bullet_color, vel.x, 6, 6)
-                        self.enemy_bullets.add(bullet)
+        if self.event_handler:
+            self.event_handler.handle_events(
+                events,
+                self.player,
+                self.bullets,
+                self.enemy_bullets,
+                self.enemies,
+                self.powerups,
+                screen_width,
+                screen_height
+            )
 
     def handle_keys(self):
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            self.player.move(-player_speed)
-        if keys[pygame.K_RIGHT]:
-            self.player.move(player_speed)
+        if self.event_handler:
+            self.event_handler.handle_keys(keys, self.player)
 
     def start_level(self):
         """Единая точка запуска уровня"""
@@ -261,50 +265,25 @@ class Game:
         
     def show_game_over_menu(self):
         """Показывает меню Game Over и возвращает True для перезапуска или False для выхода"""
-        game_over_text = game_over_font.render("GAME OVER", True, white)
-        final_score_text = score_font.render(f"Final Score: {self.score}", True, white)
-        
-        # Пункты меню
-        menu_options = ["Restart Game", "Main Menu"]
-        selected_option = 0
-        
-        # Функция для отображения меню
-        def draw_menu():
-            self.screen.fill(black)
-            self.screen.blit(game_over_text, game_over_text.get_rect(center=(screen_width/2, screen_height/2 - 80)))
-            self.screen.blit(final_score_text, final_score_text.get_rect(center=(screen_width/2, screen_height/2 - 20)))
+        if self.game_renderer and self.state_manager:
+            # Создаем экран окончания игры
+            from ui.game_over import GameOverScreen
+            game_over_screen = GameOverScreen(self.screen, self.event_manager)
             
-            # Отображаем пункты меню
-            for i, option in enumerate(menu_options):
-                color = (255, 255, 0) if i == selected_option else white  # Желтый для выбранного пункта
-                text = menu_item_font.render(option, True, color)
-                text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + 30 + i * 40))
-                self.screen.blit(text, text_rect)
-                
-            pygame.display.update()
-        
-        # Отображаем начальное меню
-        draw_menu()
+            # Отображаем начальное меню
+            game_over_screen.draw(self.state_manager.get_score())
 
-        # Wait for menu selection
-        waiting_for_selection = True
-        while waiting_for_selection:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+            # Wait for menu selection
+            waiting_for_selection = True
+            while waiting_for_selection:
+                action = game_over_screen.handle_events()
+                if action == "restart":
+                    self.reset_game()
+                    return True
+                elif action == "main_menu":
+                    return False
+                elif action == "exit":
                     pygame.quit()
                     quit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        selected_option = (selected_option - 1) % len(menu_options)
-                        draw_menu()
-                    elif event.key == pygame.K_DOWN:
-                        selected_option = (selected_option + 1) % len(menu_options)
-                        draw_menu()
-                    elif event.key == pygame.K_RETURN:
-                        if selected_option == 0:  # Restart Game
-                            waiting_for_selection = False
-                            self.reset_game()
-                            return True
-                        elif selected_option == 1:  # Main Menu
-                            waiting_for_selection = False
-                            return False
+                elif action == "redraw":
+                    game_over_screen.draw()

@@ -1,9 +1,11 @@
 import pygame
 from utils.constants import *
+from ui.ui_screen import UIScreen
 
-class Settings:
-    def __init__(self, screen, sound_manager, settings_manager=None):
-        self.screen = screen
+
+class Settings(UIScreen):
+    def __init__(self, screen, sound_manager, settings_manager=None, event_manager=None):
+        super().__init__(screen, event_manager)
         self.sound_manager = sound_manager
         self.settings_manager = settings_manager
         
@@ -60,17 +62,21 @@ class Settings:
                 elif event.key == pygame.K_UP:
                     # Перемещение вверх по пунктам настроек
                     self.selected_option = (self.selected_option - 1) % len(self.options)
+                    self.draw()  # Перерисовываем меню с новым выделенным пунктом
                 elif event.key == pygame.K_DOWN:
                     # Перемещение вниз по пунктам настроек
                     self.selected_option = (self.selected_option + 1) % len(self.options)
+                    self.draw()  # Перерисовываем меню с новым выделенным пунктом
                 elif event.key == pygame.K_LEFT:
                     # Уменьшение значения выбранной настройки
                     if self.selected_option < 2:  # Только для настроек громкости
                         self.adjust_selected_option(-0.05)
+                        self.draw()  # Перерисовываем меню с новыми значениями
                 elif event.key == pygame.K_RIGHT:
                     # Увеличение значения выбранной настройки
                     if self.selected_option < 2:  # Только для настроек громкости
                         self.adjust_selected_option(0.05)
+                        self.draw()  # Перерисовываем меню с новыми значениями
                 elif event.key == pygame.K_RETURN:
                     # Выбор пункта меню
                     if self.selected_option == 2:  # Back to Menu
