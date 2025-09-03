@@ -2,6 +2,6 @@
 from .renderer import Renderer
 from .menu import Menu
 from .settings import Settings
-from .game_over import GameOverScreen
+from .hub import HubScreen
 
-__all__ = ['Renderer', 'Menu', 'Settings', 'GameOverScreen']
+__all__ = ['Renderer', 'Menu', 'Settings', 'HubScreen']

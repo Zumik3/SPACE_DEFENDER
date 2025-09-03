@@ -7,7 +7,7 @@ init_fonts()
 from game import Game, GameManager, StateMachine, GameState
 from ui.menu import Menu
 from ui.settings import Settings
-from ui.game_over import GameOverScreen
+from ui.hub import HubScreen
 from utils.settings_manager import SettingsManager
 
 if __name__ == "__main__":
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     game_manager = GameManager(screen, settings_manager)
     menu = Menu(screen, game_manager.get_event_manager())
     settings = Settings(screen, game_manager.get_sound_manager(), settings_manager)
-    game_over_screen = GameOverScreen(screen, game_manager.get_event_manager())
+    hub_screen = HubScreen(screen, game_manager.get_event_manager())
     
     # Создаем конечный автомат для управления состояниями
     state_machine = StateMachine()
@@ -35,9 +35,7 @@ if __name__ == "__main__":
         action = menu.handle_events()
         
         if action == "new_game":
-            global should_start_game
-            should_start_game = True
-            start_state_transition(GameState.PLAYING)
+            start_state_transition(GameState.HUB)
         elif action == "settings":
             start_state_transition(GameState.SETTINGS)
         elif action == "exit":
@@ -60,29 +58,31 @@ if __name__ == "__main__":
             game_manager.get_state_manager().reset()
             # Запускаем игру через GameManager и получаем финальный счет
             game_final_score = game_manager.start_game()
-            # После завершения игры переходим к экрану окончания игры
-            start_state_transition(GameState.GAME_OVER)
+            # После завершения игры переходим к экрану хаба
+            start_state_transition(GameState.HUB)
             should_start_game = False
+            
+    def handle_hub_state():
+        """Обработчик состояния хаба"""
+        hub_screen.draw()
+        action = hub_screen.handle_events()
         
-    def handle_game_over_state():
-        """Обработчик состояния окончания игры"""
-        global game_final_score
-        game_over_screen.draw(game_final_score)
-        action = game_over_screen.handle_events()
-        
-        if action == "restart":
+        if action == "battle":
             global should_start_game
             should_start_game = True
             # Сбрасываем финальный счет перед новой игрой
             game_final_score = 0
             start_state_transition(GameState.PLAYING)
+        elif action == "rearm":
+            # Пока не реализовано
+            pass
         elif action == "main_menu":
             start_state_transition(GameState.MENU)
         elif action == "exit":
             start_state_transition(GameState.QUIT)
         elif action == "redraw":
             # Перерисовываем экран
-            game_over_screen.draw(game_final_score)
+            hub_screen.draw()
             
     def handle_quit_state():
         game_manager.get_sound_manager().stop_all_music()
@@ -113,30 +113,36 @@ if __name__ == "__main__":
         # При выходе из настроек музыка меню продолжает играть
         pass
         
-    def on_enter_game_over():
-        """Обработчик входа в состояние окончания игры"""
-        # Останавливаем музыку игры, если она играет
+    def on_enter_hub():
+        """Обработчик входа в состояние хаба"""
+        # Останавливаем музыку игры, если она играет, и запускаем музыку меню
         if pygame.mixer.get_busy():
             game_manager.get_sound_manager().stop_music()
+        if not pygame.mixer.get_busy():
+            game_manager.get_sound_manager().play_menu_music(-1)
+        # Отображаем экран хаба
+        hub_screen.draw()
         
-    def on_exit_game_over():
-        """Обработчик выхода из состояния окончания игры"""
-        # Ничего не делаем
-        pass
+    def on_exit_hub():
+        """Обработчик выхода из состояния хаба"""
+        # Останавливаем музыку меню только при переходе в игру или выходе
+        current_state = state_machine.get_current_state()
+        if current_state == GameState.PLAYING or current_state == GameState.QUIT:
+            game_manager.get_sound_manager().stop_menu_music()
         
     # Регистрируем обработчики
     state_machine.set_state_handler(GameState.MENU, handle_menu_state)
     state_machine.set_state_handler(GameState.SETTINGS, handle_settings_state)
     state_machine.set_state_handler(GameState.PLAYING, handle_playing_state)
-    state_machine.set_state_handler(GameState.GAME_OVER, handle_game_over_state)
+    state_machine.set_state_handler(GameState.HUB, handle_hub_state)
     state_machine.set_state_handler(GameState.QUIT, handle_quit_state)
     
     state_machine.set_state_enter_handler(GameState.MENU, on_enter_menu)
     state_machine.set_state_exit_handler(GameState.MENU, on_exit_menu)
     state_machine.set_state_enter_handler(GameState.SETTINGS, on_enter_settings)
     state_machine.set_state_exit_handler(GameState.SETTINGS, on_exit_settings)
-    state_machine.set_state_enter_handler(GameState.GAME_OVER, on_enter_game_over)
-    state_machine.set_state_exit_handler(GameState.GAME_OVER, on_exit_game_over)
+    state_machine.set_state_enter_handler(GameState.HUB, on_enter_hub)
+    state_machine.set_state_exit_handler(GameState.HUB, on_exit_hub)
     
     # Начинаем с меню и вызываем обработчик входа в состояние
     state_machine.transition_to(GameState.MENU)
