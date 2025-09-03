@@ -97,7 +97,14 @@ class GameManager:
         )
         # Передаем event_handler в Game
         self.game.event_handler = self.event_handler
-        return self.game.run(self.screen)
+        # Сбрасываем состояние игры перед запуском
+        self.game.reset_game()
+        # Запускаем игру и возвращаем финальный счет
+        self.game.run(self.screen)
+        # Возвращаем финальный счет игры
+        if self.game.state_manager:
+            return self.game.state_manager.get_score()
+        return 0
         
     def get_sound_manager(self):
         """Получение менеджера звука"""

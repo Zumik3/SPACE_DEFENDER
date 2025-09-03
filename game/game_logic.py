@@ -93,6 +93,8 @@ class Game:
         # Восстанавливаем исходную громкость для следующего запуска
         self.sound_manager.set_music_volume(start_volume)
 
+    
+
     def update(self):
         self.player.update()
         self.renderer.update_starfield()
@@ -244,46 +246,21 @@ class Game:
             self.draw()
             self.clock.tick(60)
             
+        # При завершении игры выполняем плавное затухание
+        self.fade_out()
+        
+        # При завершении игры возвращаем финальный счет
+        if self.state_manager:
+            return self.state_manager.get_score()
+        return 0
+            
     def run(self, screen):
         """Основной метод запуска игры"""
         self.init_pygame(screen)
         
-        # Игровой цикл с возможностью перезапуска
-        while True:
-            # Запускаем уровень
-            self.start_level()
-            
-            # Game Over Screen
-            self.fade_out()
-            
-            # Показываем меню Game Over и ждем выбора
-            restart = self.show_game_over_menu()
-            if not restart:
-                break  # Выход в главное меню
-                
-        return True  # Возвращаемся в главное меню
+        # Запускаем уровень
+        self.start_level()
         
-    def show_game_over_menu(self):
-        """Показывает меню Game Over и возвращает True для перезапуска или False для выхода"""
-        if self.game_renderer and self.state_manager:
-            # Создаем экран окончания игры
-            from ui.game_over import GameOverScreen
-            game_over_screen = GameOverScreen(self.screen, self.event_manager)
-            
-            # Отображаем начальное меню
-            game_over_screen.draw(self.state_manager.get_score())
-
-            # Wait for menu selection
-            waiting_for_selection = True
-            while waiting_for_selection:
-                action = game_over_screen.handle_events()
-                if action == "restart":
-                    self.reset_game()
-                    return True
-                elif action == "main_menu":
-                    return False
-                elif action == "exit":
-                    pygame.quit()
-                    quit()
-                elif action == "redraw":
-                    game_over_screen.draw()
+        # При завершении уровня возвращаемся в главное меню
+        # Управление состояниями централизовано в main.py
+        return False  # Возвращаемся в главное меню (не перезапуск)
