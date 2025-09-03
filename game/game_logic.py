@@ -13,18 +13,21 @@ from core.enemy_factory import EnemyFactory
 class Game:
     def __init__(self, sound_manager=None):
         self.sound_manager = sound_manager
-        self.object_pool = ObjectPool()
-        self.enemy_factory = EnemyFactory()
+        # Объекты пула и фабрика теперь передаются извне
+        self.object_pool = None
+        self.enemy_factory = None
+        self.renderer = None
         self.reset_game()
         self.game_over = False
 
     def init_pygame(self, screen):
         self.screen = screen
         self.clock = pygame.time.Clock()
-        self.renderer = Renderer(self.screen)
-        # Используем переданный sound_manager или создаем новый
-        if self.sound_manager is None:
-            self.sound_manager = SoundManager()
+        # Renderer теперь передается из GameManager
+        # self.renderer = Renderer(self.screen)
+        # SoundManager теперь всегда передается из GameManager
+        # if self.sound_manager is None:
+        #     self.sound_manager = SoundManager()
 
     def reset_game(self):
         self.score = 0
@@ -37,8 +40,9 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.powerups = pygame.sprite.Group()
         self.shoot_delay = PLAYER_SHOOT_DELAY
-        if hasattr(self, 'renderer'):
-            self.renderer.prepare_starfield()
+        # Подготовка звездного поля теперь происходит в start_level
+        # if hasattr(self, 'renderer'):
+        #     self.renderer.prepare_starfield()
         # Не включаем музыку здесь, она включается в методе run
 
     def add_powerup(self, type, x, y):
@@ -213,7 +217,9 @@ class Game:
 
     def start_level(self):
         """Единая точка запуска уровня"""
-        self.renderer.prepare_starfield()
+        # Подготовка звездного поля теперь происходит здесь
+        if hasattr(self, 'renderer') and self.renderer:
+            self.renderer.prepare_starfield()
         # Восстанавливаем громкость музыки из настроек перед запуском
         # Убеждаемся, что громкость установлена правильно
         if self.sound_manager:
