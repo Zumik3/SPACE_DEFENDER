@@ -13,7 +13,7 @@ from utils.settings_manager import SettingsManager
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))
-    pygame.display.set_caption("Star Game")
+    pygame.display.set_caption("SPACE DEFENDER")
     
     settings_manager = SettingsManager()
     sound_manager = SoundManager(settings_manager)
