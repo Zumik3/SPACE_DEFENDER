@@ -17,7 +17,7 @@ if __name__ == "__main__":
     settings_manager = SettingsManager()
     # Создаем GameManager, который будет управлять всеми компонентами игры
     game_manager = GameManager(screen, settings_manager)
-    menu = Menu(screen)
+    menu = Menu(screen, game_manager.get_event_manager())
     settings = Settings(screen, game_manager.get_sound_manager(), settings_manager)
     
     # Показываем меню

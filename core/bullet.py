@@ -35,14 +35,19 @@ class Bullet(pygame.sprite.Sprite):
         from utils.constants import enemy_bullet_color
         return cls(start_pos.x, start_pos.y, vel.y, enemy_bullet_color, vel.x, size, size)
         
-    def reset(self, x, y, vel_y, color, vel_x=0, width=4, height=10):
+    def reset(self, x=None, y=None, vel_y=None, color=None, vel_x=None, width=None, height=None):
         """Сброс состояния пули для повторного использования"""
-        self.rect.x = x
-        self.rect.y = y
-        self.vel_x = vel_x
-        self.vel_y = vel_y
+        if x is not None:
+            self.rect.x = x
+        if y is not None:
+            self.rect.y = y
+        if vel_x is not None:
+            self.vel_x = vel_x
+        if vel_y is not None:
+            self.vel_y = vel_y
+        if color is not None:
+            # Обновляем цвет, если он изменился
+            if width is not None and height is not None and self.image.get_size() != (width, height):
+                self.image = pygame.Surface((width, height))
+            self.image.fill(color)
         self.active = True
-        # Обновляем цвет, если он изменился
-        if self.image.get_size() != (width, height):
-            self.image = pygame.Surface((width, height))
-        self.image.fill(color)

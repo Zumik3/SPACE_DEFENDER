@@ -1,10 +1,12 @@
 import pygame
 from utils.constants import *
 from ui.pixel_title import PixelTitle
+from ui.ui_screen import UIScreen
 
-class Menu:
-    def __init__(self, screen):
-        self.screen = screen
+
+class Menu(UIScreen):
+    def __init__(self, screen, event_manager=None):
+        super().__init__(screen, event_manager)
         self.selected_option = 0
         self.options = ["New Game", "Settings", "Exit"]
         self.pixel_title = PixelTitle()
@@ -33,8 +35,10 @@ class Menu:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     self.selected_option = (self.selected_option - 1) % len(self.options)
+                    self.draw()  # Перерисовываем меню с новым выделенным пунктом
                 elif event.key == pygame.K_DOWN:
                     self.selected_option = (self.selected_option + 1) % len(self.options)
+                    self.draw()  # Перерисовываем меню с новым выделенным пунктом
                 elif event.key == pygame.K_RETURN:
                     if self.selected_option == 0:  # New Game
                         return "new_game"
