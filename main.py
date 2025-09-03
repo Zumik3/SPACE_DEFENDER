@@ -4,10 +4,9 @@ pygame.font.init()
 from utils.constants import init_fonts, screen_width, screen_height
 init_fonts()
 
-from game import Game
+from game import Game, GameManager
 from ui.menu import Menu
 from ui.settings import Settings
-from utils.sound_manager import SoundManager
 from utils.settings_manager import SettingsManager
 
 if __name__ == "__main__":
@@ -16,16 +15,17 @@ if __name__ == "__main__":
     pygame.display.set_caption("SPACE DEFENDER")
     
     settings_manager = SettingsManager()
-    sound_manager = SoundManager(settings_manager)
+    # Создаем GameManager, который будет управлять всеми компонентами игры
+    game_manager = GameManager(screen, settings_manager)
     menu = Menu(screen)
-    settings = Settings(screen, sound_manager, settings_manager)
+    settings = Settings(screen, game_manager.get_sound_manager(), settings_manager)
     
     # Показываем меню
     in_menu = True
     in_settings = False
     
     # Запускаем музыку меню
-    sound_manager.play_menu_music(-1)
+    game_manager.get_sound_manager().play_menu_music(-1)
     
     while True:
         if in_menu:
@@ -34,20 +34,18 @@ if __name__ == "__main__":
             
             if action == "new_game":
                 # Останавливаем музыку меню и запускаем игру
-                sound_manager.stop_menu_music()
+                game_manager.get_sound_manager().stop_menu_music()
                 in_menu = False
-                # Создаем новую игровую сессию при каждом запуске
-                game = Game(sound_manager)
-                # Запускаем игру
-                game.run(screen)
+                # Запускаем игру через GameManager
+                game_manager.start_game()
                 # После завершения игры возвращаемся в меню и снова включаем музыку меню
-                sound_manager.play_menu_music(-1)
+                game_manager.get_sound_manager().play_menu_music(-1)
                 in_menu = True
             elif action == "settings":
                 in_menu = False
                 in_settings = True
             elif action == "exit":
-                sound_manager.stop_all_music()
+                game_manager.get_sound_manager().stop_all_music()
                 pygame.quit()
                 quit()
                 
