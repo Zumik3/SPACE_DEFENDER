@@ -1,7 +1,7 @@
 import pygame
 from core.bullet import Bullet
 from core.enemy import Enemy
-from utils.constants import enemy_normal_width, enemy_strong_width, enemy_normal_height, enemy_strong_height, screen_width
+from utils.constants import enemy_normal_width, enemy_strong_width, enemy_normal_height, enemy_strong_height
 
 class ObjectPool:
     def __init__(self):

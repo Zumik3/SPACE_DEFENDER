@@ -13,7 +13,7 @@ from utils.settings_manager import SettingsManager
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))
-    pygame.display.set_caption("Star Game")
+    pygame.display.set_caption("SPACE DEFENDER")
     
     settings_manager = SettingsManager()
     sound_manager = SoundManager(settings_manager)
@@ -24,23 +24,30 @@ if __name__ == "__main__":
     in_menu = True
     in_settings = False
     
+    # Запускаем музыку меню
+    sound_manager.play_menu_music(-1)
+    
     while True:
         if in_menu:
             menu.draw()
             action = menu.handle_events()
             
             if action == "new_game":
+                # Останавливаем музыку меню и запускаем игру
+                sound_manager.stop_menu_music()
                 in_menu = False
                 # Создаем новую игровую сессию при каждом запуске
                 game = Game(sound_manager)
                 # Запускаем игру
                 game.run(screen)
-                # После завершения игры возвращаемся в меню
+                # После завершения игры возвращаемся в меню и снова включаем музыку меню
+                sound_manager.play_menu_music(-1)
                 in_menu = True
             elif action == "settings":
                 in_menu = False
                 in_settings = True
             elif action == "exit":
+                sound_manager.stop_all_music()
                 pygame.quit()
                 quit()
                 

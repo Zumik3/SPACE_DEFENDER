@@ -1,4 +1,5 @@
-# StarGate
+# SPACE DEFENDER
+
 
 A Python-based space shooter game built with Pygame.
 
@@ -13,6 +14,7 @@ A Python-based space shooter game built with Pygame.
 - Settings persistence between sessions
 - Component-based rendering system
 - Factory pattern for enemy creation
+- Separate music tracks for menu and gameplay
 
 ## Controls
 - **Arrow Keys**: Move spaceship
@@ -43,7 +45,7 @@ The game follows an improved architecture with the following key components:
 - **Factory Pattern**: Enemy creation is handled through a factory for better extensibility
 - **Settings Persistence**: Game settings are saved to a JSON file for persistence between sessions
 - **Interface-Based Design**: Game objects implement a common interface for consistency
-- **Music System**: Centralized music management with fade in/out effects and volume control
+- **Music System**: Centralized music management with fade in/out effects, volume control, and separate tracks for menu and gameplay
 
 ## Extending the Game
 The modular architecture makes it easy to extend the game with new features:

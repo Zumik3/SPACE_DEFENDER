@@ -1,6 +1,5 @@
 import pygame
 from utils.constants import *
-import os
 
 class Settings:
     def __init__(self, screen, sound_manager, settings_manager=None):
