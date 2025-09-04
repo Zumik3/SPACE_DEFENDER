@@ -247,7 +247,11 @@ class Game:
             self.clock.tick(60)
             
         # При завершении игры выполняем плавное затухание
-        self.fade_out()
+        # Проверяем, что у нас есть все необходимые компоненты для затухания
+        if (hasattr(self, 'renderer') and self.renderer and 
+            hasattr(self, 'sound_manager') and self.sound_manager and 
+            hasattr(self, 'clock') and self.clock):
+            self.fade_out()
         
         # При завершении игры возвращаем финальный счет
         if self.state_manager:

@@ -19,8 +19,9 @@ class GameRenderer:
         # Рисуем врагов через рендерер
         for enemy in enemies:
             enemy.draw(self.renderer)
-        # Рисуем бонусы
-        powerups.draw(self.screen)
+        # Рисуем бонусы через их собственный метод draw
+        for powerup in powerups:
+            powerup.draw(self.screen)
         # Рисуем пули игрока
         bullets.draw(self.screen)
         # Рисуем пули врагов

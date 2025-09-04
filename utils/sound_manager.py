@@ -52,6 +52,18 @@ class SoundManager:
             "menu": 1
         }
         
+        # Кэш для каналов
+        self._channels_cache = []
+        
+    def _get_channels(self):
+        """Получение списка каналов с кэшированием"""
+        # Проверяем, изменилось ли количество каналов
+        current_num_channels = pygame.mixer.get_num_channels()
+        if len(self._channels_cache) != current_num_channels:
+            # Обновляем кэш каналов
+            self._channels_cache = [pygame.mixer.Channel(i) for i in range(current_num_channels)]
+        return self._channels_cache
+        
     def _load_sound(self, sound_name):
         """Ленивая загрузка звука по имени"""
         # Проверяем, нужно ли освободить место в кэше
@@ -184,7 +196,7 @@ class SoundManager:
             # Используем pygame mixer для воспроизведения с ограничением
             if pygame.mixer.get_busy():
                 # Если все каналы заняты, пытаемся остановить самый старый звук выстрела
-                channels = [pygame.mixer.Channel(i) for i in range(pygame.mixer.get_num_channels())]
+                channels = self._get_channels()
                 shoot_channels = [ch for ch in channels if ch.get_sound() == shoot_sound]
                 
                 if len(shoot_channels) >= max_playbacks:
@@ -201,7 +213,7 @@ class SoundManager:
             explosion_sound.set_volume(self.sfx_volume)
             
             # Для звука взрыва используем отдельный подход - пытаемся прервать менее важные звуки
-            channels = [pygame.mixer.Channel(i) for i in range(pygame.mixer.get_num_channels())]
+            channels = self._get_channels()
             
             # Ищем свободный канал
             free_channel = None

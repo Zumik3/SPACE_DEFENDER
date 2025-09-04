@@ -56,9 +56,9 @@ class Powerup(pygame.sprite.Sprite, GameObject):
         
         return None
         
-    def draw(self, renderer):
+    def draw(self, screen):
         # Рисуем бонус на экране
-        pass  # Реализация зависит от подкласса
+        screen.blit(self.image, self.rect)  # Реализация зависит от подкласса
         
     def get_rect(self):
         return self.rect
