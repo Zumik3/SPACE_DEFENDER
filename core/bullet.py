@@ -11,7 +11,6 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y = y
         self.vel_x = vel_x
         self.vel_y = vel_y
-        self.active = True
 
     def update(self):
         self.rect.x += self.vel_x
@@ -23,7 +22,19 @@ class Bullet(pygame.sprite.Sprite):
             self.rect.left > screen_width or 
             self.rect.top > screen_height):
             self.kill()
-            self.active = False
+
+    def draw(self, renderer):
+        # Для пуль используется стандартная отрисовка через Group.draw()
+        # Этот метод добавлен для совместимости с интерфейсом GameObject
+        pass
+        
+    def get_rect(self):
+        # Возвращаем rect для совместимости с интерфейсом GameObject
+        return self.rect
+        
+    def is_active(self):
+        # Используем стандартный метод alive() для проверки активности
+        return self.alive()
 
     @classmethod
     def player_bullet(cls, player_rect):
@@ -50,4 +61,3 @@ class Bullet(pygame.sprite.Sprite):
             if width is not None and height is not None and self.image.get_size() != (width, height):
                 self.image = pygame.Surface((width, height))
             self.image.fill(color)
-        self.active = True

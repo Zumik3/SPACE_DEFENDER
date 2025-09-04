@@ -2,6 +2,7 @@ import pygame
 from core.bullet import Bullet
 from core.enemy import Enemy
 from utils.constants import enemy_normal_width, enemy_strong_width, enemy_normal_height, enemy_strong_height
+import random
 
 class ObjectPool:
     def __init__(self):
@@ -21,18 +22,27 @@ class ObjectPool:
         if len(self.bullet_pool) < self.max_pool_size:
             self.bullet_pool.append(bullet)
             
-    def get_enemy(self, enemy_type):
+    def get_enemy(self, enemy_type, screen_width):
         # Ищем врага нужного типа в пуле
         for i, enemy in enumerate(self.enemy_pool):
             if enemy.type == enemy_type:
-                return self.enemy_pool.pop(i)
+                # Устанавливаем правильные координаты для врага
+                if enemy_type == 'strong':
+                    enemy_x = random.randint(0, screen_width - enemy_strong_width)
+                    enemy.rect.x = enemy_x
+                    enemy.rect.y = -enemy_strong_height
+                else:
+                    enemy_x = random.randint(0, screen_width - enemy_normal_width)
+                    enemy.rect.x = enemy_x
+                    enemy.rect.y = -enemy_normal_height
+                return enemy
                 
         # Если не нашли, создаем нового
         if enemy_type == 'strong':
-            enemy_x = 0  # Будет установлен позже
+            enemy_x = random.randint(0, screen_width - enemy_strong_width)
             return Enemy(enemy_x, -enemy_strong_height, 'strong')
         else:
-            enemy_x = 0  # Будет установлен позже
+            enemy_x = random.randint(0, screen_width - enemy_normal_width)
             return Enemy(enemy_x, -enemy_normal_height, 'normal')
             
     def return_enemy(self, enemy):

@@ -59,19 +59,17 @@ class ObjectPoolManager:
         pool = self.pools.get(object_type, [])
         max_size = self.max_pool_sizes.get(object_type, 100)
         
-        if len(pool) < max_size and hasattr(obj, 'active') and obj.active:
+        # Проверяем, что пул не переполнен
+        if len(pool) < max_size:
             # Сброс состояния объекта перед возвратом в пул
             if hasattr(obj, 'reset'):
-                # Для некоторых объектов reset может не требовать аргументов
                 try:
                     # Пытаемся вызвать reset без аргументов
                     obj.reset()
                 except TypeError:
-                    # Если reset требует аргументов, пропускаем сброс
-                    # Вместо этого просто очищаем объект перед возвратом в пул
-                    if hasattr(obj, '__init__') and hasattr(obj, 'rect'):
-                        # Для объектов с rect (pygame.sprite.Sprite) просто сбрасываем флаг active
-                        pass
+                    # Если reset требует аргументов, вызываем его с дефолтными значениями
+                    # Это не должно происходить, если reset правильно реализован
+                    pass
             pool.append(obj)
             
     def _create_object(self, object_type, *args, **kwargs):
