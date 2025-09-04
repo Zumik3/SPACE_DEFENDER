@@ -1,7 +1,6 @@
 import pygame
 from utils.constants import *
 
-
 class GameRenderer:
     """Класс для отрисовки игровых объектов"""
     
@@ -14,17 +13,18 @@ class GameRenderer:
         self.screen.fill(black)
         self.renderer.draw_starfield()
         
-        if not invincible or (pygame.time.get_ticks() // 200) % 2 == 0:
-            self.renderer.draw_player_ship(player.rect)
-        # Рисуем врагов через рендерер
-        for enemy in enemies:
-            enemy.draw(self.renderer)
-        # Рисуем бонусы
-        powerups.draw(self.screen)
         # Рисуем пули игрока
         bullets.draw(self.screen)
         # Рисуем пули врагов
         enemy_bullets.draw(self.screen)
+        # Рисуем врагов
+        enemies.draw(self.screen)
+        # Рисуем бонусы
+        powerups.draw(self.screen)
+        # Рисуем игрока с миганием, если он неуязвим
+        if not invincible or (pygame.time.get_ticks() // 200) % 2 == 0:
+            self.screen.blit(player.image, player.rect)
+            
         self.renderer.draw_score(score)
         self.renderer.draw_lives(player_lives)
         pygame.display.update()

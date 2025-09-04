@@ -132,7 +132,7 @@ class Game:
                     self.player.make_invincible()
                     self.sound_manager.play_explosion()
                     # Возвращаем врага в пул
-                    if enemy.active and self.object_pool_manager:
+                    if not enemy.alive() and self.object_pool_manager:
                         self.object_pool_manager.return_object('enemy', enemy)
                     if game_over:
                         self.game_over = True
@@ -148,7 +148,7 @@ class Game:
                     game_over = self.state_manager.lose_life()
                     self.player.make_invincible()
                     # Возвращаем пулю в пул
-                    if bullet.active and self.object_pool_manager:
+                    if not bullet.alive() and self.object_pool_manager:
                         self.object_pool_manager.return_object('bullet', bullet)
                     if game_over:
                         self.game_over = True
@@ -184,10 +184,10 @@ class Game:
                             self.event_manager.notify("score_updated", {"score": self.state_manager.get_score()})
                     self.sound_manager.play_explosion()
                     # Возвращаем врага в пул
-                    if enemy.active and self.object_pool_manager:
+                    if not enemy.alive() and self.object_pool_manager:
                         self.object_pool_manager.return_object('enemy', enemy)
                 # Возвращаем пулю в пул
-                if bullet.active and self.object_pool_manager:
+                if not bullet.alive() and self.object_pool_manager:
                     self.object_pool_manager.return_object('bullet', bullet)
 
     def draw(self):
@@ -247,7 +247,11 @@ class Game:
             self.clock.tick(60)
             
         # При завершении игры выполняем плавное затухание
-        self.fade_out()
+        # Проверяем, что у нас есть все необходимые компоненты для затухания
+        if (hasattr(self, 'renderer') and self.renderer and 
+            hasattr(self, 'sound_manager') and self.sound_manager and 
+            hasattr(self, 'clock') and self.clock):
+            self.fade_out()
         
         # При завершении игры возвращаем финальный счет
         if self.state_manager:

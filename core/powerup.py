@@ -1,9 +1,8 @@
 import pygame
 import random
 from utils.constants import *
-from core.game_object import GameObject
 
-class Powerup(pygame.sprite.Sprite, GameObject):
+class Powerup(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.vel_y = POWERUP_SPEED
@@ -32,6 +31,12 @@ class Powerup(pygame.sprite.Sprite, GameObject):
         # Этот метод должен быть переопределен в подклассах
         pass
 
+    def reset(self):
+        """Сброс состояния бонуса для повторного использования (обычно не используется)"""
+        # Для бонусов сброс обычно не требуется, так как они создаются заново
+        # Но метод добавлен для совместимости с интерфейсом пула
+        pass
+
     @staticmethod
     def drop_powerup(enemy, game):
         """Метод для определения, какой бонус должен выпасть при убийстве врага"""
@@ -56,15 +61,12 @@ class Powerup(pygame.sprite.Sprite, GameObject):
         
         return None
         
-    def draw(self, renderer):
-        # Рисуем бонус на экране
-        pass  # Реализация зависит от подкласса
-        
     def get_rect(self):
         return self.rect
         
     def is_active(self):
-        return True
+        # Используем стандартный метод alive() для проверки активности
+        return self.alive()
 
 
 class HealthPowerup(Powerup):

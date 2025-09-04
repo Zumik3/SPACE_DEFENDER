@@ -7,7 +7,7 @@ class GameState(Enum):
     MENU = "menu"
     SETTINGS = "settings"
     PLAYING = "playing"
-    GAME_OVER = "game_over"
+    HUB = "hub"
     QUIT = "quit"
 
 
@@ -36,8 +36,8 @@ class StateMachine:
         
     def _define_transitions(self):
         """Определяем допустимые переходы между состояниями"""
-        # Из меню можно перейти в игру, настройки или выйти
-        self.add_transition(GameState.MENU, GameState.PLAYING)
+        # Из меню можно перейти в хаб, настройки или выйти
+        self.add_transition(GameState.MENU, GameState.HUB)
         self.add_transition(GameState.MENU, GameState.SETTINGS)
         self.add_transition(GameState.MENU, GameState.QUIT)
         
@@ -45,14 +45,14 @@ class StateMachine:
         self.add_transition(GameState.SETTINGS, GameState.MENU)
         self.add_transition(GameState.SETTINGS, GameState.QUIT)
         
-        # Из игры можно перейти в завершение игры или выйти
-        self.add_transition(GameState.PLAYING, GameState.GAME_OVER)
+        # Из игры можно перейти в хаб или выйти
+        self.add_transition(GameState.PLAYING, GameState.HUB)
         self.add_transition(GameState.PLAYING, GameState.QUIT)
         
-        # Из завершения игры можно перезапустить игру, вернуться в меню или выйти
-        self.add_transition(GameState.GAME_OVER, GameState.PLAYING)
-        self.add_transition(GameState.GAME_OVER, GameState.MENU)
-        self.add_transition(GameState.GAME_OVER, GameState.QUIT)
+        # Из хаба можно перезапустить игру, вернуться в меню или выйти
+        self.add_transition(GameState.HUB, GameState.PLAYING)
+        self.add_transition(GameState.HUB, GameState.MENU)
+        self.add_transition(GameState.HUB, GameState.QUIT)
         
     def add_transition(self, from_state: GameState, to_state: GameState, condition: Optional[Callable] = None):
         """Добавляет переход между состояниями"""

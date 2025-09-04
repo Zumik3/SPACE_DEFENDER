@@ -29,9 +29,9 @@ class GameStateManager:
         """Проверка, идет ли игра"""
         return self.current_state == GameState.PLAYING
         
-    def is_game_over(self) -> bool:
-        """Проверка, закончилась ли игра"""
-        return self.current_state == GameState.GAME_OVER
+    def is_hub(self) -> bool:
+        """Проверка, находится ли игра в состоянии хаба"""
+        return self.current_state == GameState.HUB
         
     def is_paused(self) -> bool:
         """Проверка, поставлена ли игра на паузу"""
@@ -57,9 +57,10 @@ class GameStateManager:
             self.is_paused = False
             self.current_state = GameState.PLAYING
             
-    def game_over(self):
-        """Завершение игры"""
-        self.current_state = GameState.GAME_OVER
+    def return_to_hub(self):
+        """Возврат в хаб"""
+        self.current_state = GameState.HUB
+        self.is_paused = False
         
     def return_to_menu(self):
         """Возврат в главное меню"""
