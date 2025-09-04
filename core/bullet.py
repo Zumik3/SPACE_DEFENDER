@@ -1,5 +1,7 @@
 import pygame
-from utils.constants import screen_width, screen_height
+from utils.constants import (
+    screen_width, screen_height, bullet_color, bullet_speed, enemy_bullet_color
+)
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, vel_y, color, vel_x=0, width=4, height=10):

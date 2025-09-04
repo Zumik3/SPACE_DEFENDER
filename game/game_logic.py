@@ -1,14 +1,13 @@
-import pygame
 import random
-from ui.renderer import Renderer
-from utils.sound_manager import SoundManager
+import pygame
 from core.player import Player
-from core.enemy import Enemy
 from core.bullet import Bullet
-from core.powerup import Powerup
-from utils.constants import *
-from game.object_pool import ObjectPool
 from core.enemy_factory import EnemyFactory
+from core.powerup import Powerup
+from utils.constants import (
+    ENEMY_SHOOT_EVENT, ENEMY_SPAWN_EVENT, PLAYER_SHOOT_EVENT, screen_width, screen_height, player_width, player_height, enemy_speed, 
+    PLAYER_SHOOT_DELAY, ENEMY_SPAWN_DELAY, ENEMY_SHOOT_DELAY
+)
 
 class Game:
     def __init__(self, sound_manager=None):
@@ -105,56 +104,69 @@ class Game:
         self.enemies.update()
         self.powerups.update()
 
-        # Normal enemy independent shoot
-        for enemy in self.enemies:
-            if enemy.type == 'normal' and enemy.rect.y < screen_height * (2/3) and random.random() < 0.001:
-                start_pos = pygame.math.Vector2(enemy.rect.centerx, enemy.rect.bottom)
-                vel = (0, ENEMY_NORMAL_SPEED)
-                # Используем пул объектов для создания пуль
-                bullet = self.object_pool_manager.get_object(
-                    'bullet',
-                    start_pos.x, 
-                    start_pos.y, 
-                    vel[1], 
-                    enemy_bullet_color, 
-                    vel[0], 
-                    4, 
-                    4
-                )
-                self.enemy_bullets.add(bullet)
-
         # Check collisions between player and enemies
         if not self.player.invincible:
-            enemy_hits = pygame.sprite.spritecollide(self.player, self.enemies, True)
+            enemy_hits = pygame.sprite.spritecollide(self.player, self.enemies, False)  # Не удаляем врагов автоматически
             for enemy in enemy_hits:
-                if self.state_manager:
-                    game_over = self.state_manager.lose_life()
-                    self.player.make_invincible()
+                # Враг наносит урон игроку
+                player_destroyed = self.player.hit(1)  # Враг наносит 1 урон
+                enemy_destroyed = enemy.hit()  # Игрок наносит 1 урон врагу при столкновении
+                
+                if player_destroyed:
+                    if self.state_manager:
+                        game_over = self.state_manager.lose_life()
+                        # Сброс здоровья игрока
+                        self.player.health = 3
+                        if game_over:
+                            self.game_over = True
+                            # Уведомляем подписчиков об окончании игры
+                            if self.event_manager:
+                                self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                
+                if enemy_destroyed:
+                    # Враг уничтожен
+                    enemy.kill()
+                    # Drop powerups only when enemy dies
+                    powerup = Powerup.drop_powerup(enemy, self)
+                    if powerup:
+                        self.powerups.add(powerup)
+                    if self.state_manager:
+                        self.state_manager.update_score(enemy.get_score())
+                        # Уведомляем подписчиков об изменении счета
+                        if self.event_manager:
+                            self.event_manager.notify("score_updated", {"score": self.state_manager.get_score()})
                     self.sound_manager.play_explosion()
                     # Возвращаем врага в пул
                     if not enemy.alive() and self.object_pool_manager:
                         self.object_pool_manager.return_object('enemy', enemy)
-                    if game_over:
-                        self.game_over = True
-                        # Уведомляем подписчиков об окончании игры
-                        if self.event_manager:
-                            self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                else:
+                    # Враг не уничтожен, просто отталкиваем его немного назад
+                    enemy.rect.y -= enemy_speed * 2
 
         # Check collisions between player and enemy bullets
         if not self.player.invincible:
             bullet_hits = pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)
             for bullet in bullet_hits:
-                if self.state_manager:
-                    game_over = self.state_manager.lose_life()
-                    self.player.make_invincible()
-                    # Возвращаем пулю в пул
-                    if not bullet.alive() and self.object_pool_manager:
-                        self.object_pool_manager.return_object('bullet', bullet)
-                    if game_over:
-                        self.game_over = True
-                        # Уведомляем подписчиков об окончании игры
-                        if self.event_manager:
-                            self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                # Пуля наносит урон игроку
+                player_destroyed = self.player.hit(1)  # Пуля наносит 1 урон
+                
+                if player_destroyed:
+                    if self.state_manager:
+                        game_over = self.state_manager.lose_life()
+                        # Сброс здоровья игрока
+                        self.player.health = 3
+                        if game_over:
+                            self.game_over = True
+                            # Уведомляем подписчиков об окончании игры
+                            if self.event_manager:
+                                self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                else:
+                    self.player.make_invincible()  # Игрок становится неуязвимым на короткое время
+                
+                self.sound_manager.play_explosion()
+                # Возвращаем пулю в пул
+                if not bullet.alive() and self.object_pool_manager:
+                    self.object_pool_manager.return_object('bullet', bullet)
 
         # Check collisions between player and powerups
         powerup_hits = pygame.sprite.spritecollide(self.player, self.powerups, True)
@@ -169,9 +181,11 @@ class Game:
         bullet_hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, False)
         for bullet, hit_enemies in bullet_hits.items():
             for enemy in hit_enemies:
-                # Враг теряет одну единицу здоровья
-                if enemy.hit():
-                    # Враг умирает
+                # Пуля наносит урон врагу
+                enemy_destroyed = enemy.hit()  # Пуля наносит 1 урон врагу
+                
+                if enemy_destroyed:
+                    # Враг уничтожен
                     enemy.kill()
                     # Drop powerups only when enemy dies
                     powerup = Powerup.drop_powerup(enemy, self)
@@ -199,7 +213,6 @@ class Game:
                 self.enemies,
                 self.powerups,
                 self.state_manager.get_score(),
-                self.state_manager.get_lives(),
                 self.player.invincible
             )
 

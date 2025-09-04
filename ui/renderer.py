@@ -98,7 +98,12 @@ class Renderer:
             self.draw_heart(x, y)
 
     def draw_score(self, score):
-        score_text = score_font.render(f"Score: {score}", True, white)
+        # Safety check for font initialization
+        if score_font is None:
+            # Fallback to system font if custom font failed to load
+            score_text = pygame.font.SysFont("Arial", SCORE_FONT_SIZE).render(f"Score: {score}", True, white)
+        else:
+            score_text = score_font.render(f"Score: {score}", True, white)
         self.screen.blit(score_text, (10, 10))
 
     def draw_powerups(self, powerups):

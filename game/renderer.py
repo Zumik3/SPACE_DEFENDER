@@ -1,5 +1,5 @@
 import pygame
-from utils.constants import *
+from utils.constants import black
 
 class GameRenderer:
     """Класс для отрисовки игровых объектов"""
@@ -8,7 +8,7 @@ class GameRenderer:
         self.screen = screen
         self.renderer = renderer
         
-    def draw_game(self, player, bullets, enemy_bullets, enemies, powerups, score, player_lives, invincible=False):
+    def draw_game(self, player, bullets, enemy_bullets, enemies, powerups, score, invincible=False):
         """Отрисовка игрового экрана"""
         self.screen.fill(black)
         self.renderer.draw_starfield()
@@ -26,5 +26,5 @@ class GameRenderer:
             self.screen.blit(player.image, player.rect)
             
         self.renderer.draw_score(score)
-        self.renderer.draw_lives(player_lives)
+        self.renderer.draw_lives(player.health)  # Отображаем здоровье игрока
         pygame.display.update()

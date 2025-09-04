@@ -1,4 +1,5 @@
 import pygame
+from utils import constants
 from utils.constants import *
 from ui.ui_screen import UIScreen
 
@@ -29,7 +30,7 @@ class Settings(UIScreen):
         self.screen.fill(black)
         
         # Рисуем заголовок
-        title_text = settings_title_font.render("SETTINGS", True, white)
+        title_text = constants.settings_title_font.render("SETTINGS", True, white)
         title_rect = title_text.get_rect(center=(screen_width/2, screen_height/2 - 150))
         self.screen.blit(title_text, title_rect)
         
@@ -38,7 +39,7 @@ class Settings(UIScreen):
             if i == 2:  # Back to Menu
                 # Выделение выбранного пункта
                 color = (255, 255, 0) if i == self.selected_option else white
-                text = settings_item_font.render(option, True, color)
+                text = constants.settings_item_font.render(option, True, color)
                 text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + i * 50))
                 self.screen.blit(text, text_rect)
             else:  # Volume settings
@@ -46,7 +47,7 @@ class Settings(UIScreen):
                 color = (255, 255, 0) if i == self.selected_option else white
                 # Формат: "Option Name: Value%"
                 value = self.music_volume if i == 0 else self.sfx_volume
-                text = settings_item_font.render(f"{option}: {int(value * 100)}%", True, color)
+                text = constants.settings_item_font.render(f"{option}: {int(value * 100)}%", True, color)
                 text_rect = text.get_rect(center=(screen_width/2, screen_height/2 - 50 + i * 50))
                 self.screen.blit(text, text_rect)
         

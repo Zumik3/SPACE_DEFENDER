@@ -1,7 +1,7 @@
 # Core entities package
-from .player import Player
-from .enemy import Enemy
-from .bullet import Bullet
-from .powerup import Powerup
+from core.player import Player
+from core.base_enemy import Enemy
+from core.bullet import Bullet
+from core.powerup import Powerup
 
 __all__ = ['Player', 'Enemy', 'Bullet', 'Powerup']

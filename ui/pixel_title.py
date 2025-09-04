@@ -1,6 +1,6 @@
-import pygame
 import os
-from utils.constants import *
+import pygame
+from utils.constants import screen_width
 
 class PixelTitle:
     def __init__(self):

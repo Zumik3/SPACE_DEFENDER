@@ -1,7 +1,8 @@
 import pygame
-from utils.constants import *
 from ui.pixel_title import PixelTitle
 from ui.ui_screen import UIScreen
+from utils import constants
+from utils.constants import black, white, screen_width, screen_height
 
 
 class Menu(UIScreen):
@@ -22,7 +23,7 @@ class Menu(UIScreen):
         # Рисуем пункты меню
         for i, option in enumerate(self.options):
             color = (255, 255, 0) if i == self.selected_option else white  # Выделенный пункт желтого цвета
-            text = menu_item_font.render(option, True, color)
+            text = constants.menu_item_font.render(option, True, color)
             text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + i * 50))
             self.screen.blit(text, text_rect)
             

@@ -1,6 +1,7 @@
 import pygame
 from core.bullet import Bullet
-from core.enemy import Enemy
+from core.normal_enemy import NormalEnemy
+from core.strong_enemy import StrongEnemy
 from core.powerup import Powerup
 from core.player import Player
 from utils.constants import enemy_normal_width, enemy_strong_width, enemy_normal_height, enemy_strong_height
@@ -94,11 +95,11 @@ class ObjectPoolManager:
         if enemy_type == 'strong':
             if y == 0:
                 y = -enemy_strong_height
-            return Enemy(x, y, 'strong')
+            return StrongEnemy(x, y)
         else:
             if y == 0:
                 y = -enemy_normal_height
-            return Enemy(x, y, 'normal')
+            return NormalEnemy(x, y)
             
     def _create_powerup(self, powerup_type, x, y):
         """Создание бонуса"""

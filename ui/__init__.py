@@ -1,7 +1,7 @@
 # UI rendering package
-from .renderer import Renderer
-from .menu import Menu
-from .settings import Settings
-from .hub import HubScreen
+from ui.renderer import Renderer
+from ui.menu import Menu
+from ui.settings import Settings
+from ui.hub import HubScreen
 
 __all__ = ['Renderer', 'Menu', 'Settings', 'HubScreen']

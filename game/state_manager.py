@@ -1,6 +1,6 @@
 import pygame
 from utils.constants import *
-from .state_machine import GameState
+from game.state_machine import GameState
 
 
 class GameStateManager:

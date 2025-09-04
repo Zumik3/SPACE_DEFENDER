@@ -1,6 +1,11 @@
-import pygame
 import random
-from utils.constants import *
+import pygame
+from utils.constants import (
+    POWERUP_SPEED, screen_height, POWERUP_SIZE, POWERUP_HEALTH_CHANCE_STRONG,
+    POWERUP_HEALTH_CHANCE_NORMAL, POWERUP_FIRE_CHANCE_STRONG, POWERUP_FIRE_CHANCE_NORMAL,
+    POWERUP_HEALTH_COLOR, POWERUP_FIRE_COLOR, FIRE_RATE_BOOST, PLAYER_SHOOT_EVENT,
+    PIXEL_SIZE
+)
 
 class Powerup(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -40,9 +45,12 @@ class Powerup(pygame.sprite.Sprite):
     @staticmethod
     def drop_powerup(enemy, game):
         """Метод для определения, какой бонус должен выпасть при убийстве врага"""
+        # Определяем тип врага по его классу
+        enemy_type = 'strong' if enemy.__class__.__name__ == 'StrongEnemy' else 'normal'
+        
         r = random.random()
-        health_chance = POWERUP_HEALTH_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_HEALTH_CHANCE_NORMAL
-        fire_chance = POWERUP_FIRE_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_FIRE_CHANCE_NORMAL
+        health_chance = POWERUP_HEALTH_CHANCE_STRONG if enemy_type == 'strong' else POWERUP_HEALTH_CHANCE_NORMAL
+        fire_chance = POWERUP_FIRE_CHANCE_STRONG if enemy_type == 'strong' else POWERUP_FIRE_CHANCE_NORMAL
         
         if r < health_chance:
             x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2

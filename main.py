@@ -1,19 +1,23 @@
 import pygame
-pygame.font.init()
-
-from utils.constants import init_fonts, screen_width, screen_height
-init_fonts()
-
-from game import Game, GameManager, StateMachine, GameState
+from game.game_manager import GameManager
+from game.state_machine import StateMachine
+from game.state_manager import GameState
 from ui.menu import Menu
 from ui.settings import Settings
 from ui.hub import HubScreen
 from utils.settings_manager import SettingsManager
+from utils.constants import init_fonts, screen_width, screen_height
+
+pygame.init()
+pygame.font.init()
 
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("SPACE DEFENDER")
+    
+    # Initialize fonts after pygame display is set up
+    init_fonts()
     
     settings_manager = SettingsManager()
     # Создаем GameManager, который будет управлять всеми компонентами игры

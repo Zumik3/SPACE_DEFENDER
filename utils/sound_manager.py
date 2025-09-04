@@ -1,6 +1,6 @@
 import pygame
 import os
-from .constants import *
+from utils.constants import *
 import time
 
 

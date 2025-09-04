@@ -1,6 +1,7 @@
 import pygame
-from utils.constants import *
 from ui.ui_screen import UIScreen
+from utils import constants
+from utils.constants import black, white, screen_width, screen_height
 
 
 class HubScreen(UIScreen):
@@ -16,13 +17,13 @@ class HubScreen(UIScreen):
         self.screen.fill(black)
         
         # Рисуем заголовок хаба
-        hub_title_text = game_over_font.render("HUB", True, white)
+        hub_title_text = constants.game_over_font.render("HUB", True, white)
         self.screen.blit(hub_title_text, hub_title_text.get_rect(center=(screen_width/2, screen_height/2 - 80)))
         
         # Рисуем пункты меню
         for i, option in enumerate(self.options):
             color = (255, 255, 0) if i == self.selected_option else white  # Желтый для выбранного пункта
-            text = menu_item_font.render(option, True, color)
+            text = constants.menu_item_font.render(option, True, color)
             text_rect = text.get_rect(center=(screen_width/2, screen_height/2 + 30 + i * 40))
             self.screen.blit(text, text_rect)
             

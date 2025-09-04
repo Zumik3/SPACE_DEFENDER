@@ -1,6 +1,6 @@
 # Utilities package
-from .constants import *
-from .sound_manager import SoundManager
-from .event_manager import EventManager
+from utils.constants import *
+from utils.sound_manager import SoundManager
+from utils.event_manager import EventManager
 
 __all__ = ['SoundManager', 'EventManager']  # Add more as needed
