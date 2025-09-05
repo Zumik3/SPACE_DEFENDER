@@ -40,9 +40,13 @@ class Powerup(pygame.sprite.Sprite):
     @staticmethod
     def drop_powerup(enemy, game):
         """Метод для определения, какой бонус должен выпасть при убийстве врага"""
+        from core.enemy import StrongEnemy, NormalEnemy  # Import here to avoid circular imports
+        
         r = random.random()
-        health_chance = POWERUP_HEALTH_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_HEALTH_CHANCE_NORMAL
-        fire_chance = POWERUP_FIRE_CHANCE_STRONG if enemy.type == 'strong' else POWERUP_FIRE_CHANCE_NORMAL
+        # Use isinstance to check enemy type
+        is_strong = isinstance(enemy, StrongEnemy)
+        health_chance = POWERUP_HEALTH_CHANCE_STRONG if is_strong else POWERUP_HEALTH_CHANCE_NORMAL
+        fire_chance = POWERUP_FIRE_CHANCE_STRONG if is_strong else POWERUP_FIRE_CHANCE_NORMAL
         
         if r < health_chance:
             x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
