@@ -99,10 +99,12 @@ class HealthPowerup(Powerup):
         pygame.draw.rect(self.image, self.color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
 
     def apply_effect(self, game):
+        # Восстанавливаем здоровье игрока напрямую
+        game.player.heal()
+        # Обновляем количество жизней в state_manager
         if game.state_manager:
-            # Увеличиваем количество жизней через GameStateManager
-            current_lives = game.state_manager.get_lives()
-            game.state_manager.player_lives = current_lives + 1
+            current_lives = game.player.get_health()
+            game.state_manager.player_lives = current_lives
 
 
 class FireRatePowerup(Powerup):

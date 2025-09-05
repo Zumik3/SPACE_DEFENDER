@@ -1,6 +1,7 @@
 import pygame
 from utils.constants import player_width, player_height, screen_width, screen_height, PIXEL_SIZE, player_body, player_wing, player_cockpit, player_engine
 
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -11,6 +12,8 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = y
         self.invincible = False
         self.invincible_end_time = 0
+        # Добавляем систему жизней
+        self.health = 3  # У игрока 3 жизни
         # Отрисовываем корабль в image
         self._draw_player_ship()
 
@@ -34,6 +37,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.y = y
         self.invincible = False
         self.invincible_end_time = 0
+        self.health = 3  # Сброс жизней
         # Перерисовываем корабль
         self._draw_player_ship()
         
@@ -58,3 +62,23 @@ class Player(pygame.sprite.Sprite):
         
     def is_active(self):
         return True
+        
+    def take_damage(self):
+        """Получение урона"""
+        # Если игрок в неуязвимом состоянии, он не получает урон
+        if self.invincible:
+            return False
+        self.health -= 1
+        return self.health <= 0  # Возвращаем True, если игрок уничтожен
+        
+    def heal(self):
+        """Восстановление здоровья"""
+        self.health = min(5, self.health + 1)  # Максимум 5 жизней
+        
+    def is_alive(self):
+        """Проверка, жив ли игрок"""
+        return self.health > 0
+        
+    def get_health(self):
+        """Получение текущего здоровья"""
+        return self.health
