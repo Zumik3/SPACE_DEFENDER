@@ -36,7 +36,8 @@ class GameEventHandler:
                 enemy = self.enemy_factory.create_random_enemy(screen_width)
                 enemies.add(enemy)
             elif event.type == ENEMY_SHOOT_EVENT:
-                strong_enemies_on_screen = [e for e in enemies if e.type == 'strong' and e.rect.y < screen_height * (2/3)]
+                from core.enemy import StrongEnemy
+                strong_enemies_on_screen = [e for e in enemies if isinstance(e, StrongEnemy) and e.rect.y < screen_height * (2/3)]
                 if strong_enemies_on_screen:
                     shooter = random.choice(strong_enemies_on_screen)
                     start_pos = pygame.math.Vector2(shooter.rect.center)

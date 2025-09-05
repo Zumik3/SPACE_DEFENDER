@@ -1,14 +1,9 @@
 import pygame
 import random
-from ui.renderer import Renderer
-from utils.sound_manager import SoundManager
 from core.player import Player
-from core.enemy import Enemy
-from core.bullet import Bullet
+from core.enemy import NormalEnemy
 from core.powerup import Powerup
 from utils.constants import *
-from game.object_pool import ObjectPool
-from core.enemy_factory import EnemyFactory
 
 class Game:
     def __init__(self, sound_manager=None):
@@ -107,7 +102,7 @@ class Game:
 
         # Normal enemy independent shoot
         for enemy in self.enemies:
-            if enemy.type == 'normal' and enemy.rect.y < screen_height * (2/3) and random.random() < 0.001:
+            if isinstance(enemy, NormalEnemy) and enemy.rect.y < screen_height * (2/3) and random.random() < 0.001:
                 start_pos = pygame.math.Vector2(enemy.rect.centerx, enemy.rect.bottom)
                 vel = (0, ENEMY_NORMAL_SPEED)
                 # Используем пул объектов для создания пуль

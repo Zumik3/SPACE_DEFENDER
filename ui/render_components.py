@@ -10,9 +10,10 @@ class PlayerRenderComponent(RenderComponent):
 class EnemyRenderComponent(RenderComponent):
     """Компонент отрисовки врагов"""
     def draw(self, enemy):
-        if enemy.type == 'strong':
+        from core.enemy import StrongEnemy, NormalEnemy  # Import here to avoid circular imports
+        if isinstance(enemy, StrongEnemy):
             self.renderer.draw_strong_enemy(enemy.rect)
-        else:
+        elif isinstance(enemy, NormalEnemy):
             self.renderer.draw_normal_enemy(enemy.rect)
 
 class BulletRenderComponent(RenderComponent):

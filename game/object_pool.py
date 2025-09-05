@@ -1,6 +1,6 @@
 import pygame
 from core.bullet import Bullet
-from core.enemy import Enemy
+from core.enemy import NormalEnemy, StrongEnemy
 from utils.constants import enemy_normal_width, enemy_strong_width, enemy_normal_height, enemy_strong_height
 import random
 
@@ -25,7 +25,9 @@ class ObjectPool:
     def get_enemy(self, enemy_type, screen_width):
         # Ищем врага нужного типа в пуле
         for i, enemy in enumerate(self.enemy_pool):
-            if enemy.type == enemy_type:
+            # Проверяем тип врага через isinstance
+            is_strong = isinstance(enemy, StrongEnemy)
+            if (enemy_type == 'strong' and is_strong) or (enemy_type == 'normal' and not is_strong):
                 # Устанавливаем правильные координаты для врага
                 if enemy_type == 'strong':
                     enemy_x = random.randint(0, screen_width - enemy_strong_width)
@@ -35,17 +37,23 @@ class ObjectPool:
                     enemy_x = random.randint(0, screen_width - enemy_normal_width)
                     enemy.rect.x = enemy_x
                     enemy.rect.y = -enemy_normal_height
+                # Сбрасываем состояние врага
+                enemy.reset(enemy.rect.x, enemy.rect.y)
                 return enemy
                 
         # Если не нашли, создаем нового
         if enemy_type == 'strong':
             enemy_x = random.randint(0, screen_width - enemy_strong_width)
-            return Enemy(enemy_x, -enemy_strong_height, 'strong')
+            return StrongEnemy(enemy_x, -enemy_strong_height)
         else:
             enemy_x = random.randint(0, screen_width - enemy_normal_width)
-            return Enemy(enemy_x, -enemy_normal_height, 'normal')
+            return NormalEnemy(enemy_x, -enemy_normal_height)
             
     def return_enemy(self, enemy):
         if len(self.enemy_pool) < self.max_pool_size:
-            enemy.reset()  # Сброс состояния врага
+            # Сброс состояния врага (теперь без параметров типа)
+            if isinstance(enemy, StrongEnemy):
+                enemy.reset()
+            elif isinstance(enemy, NormalEnemy):
+                enemy.reset()
             self.enemy_pool.append(enemy)

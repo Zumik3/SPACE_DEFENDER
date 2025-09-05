@@ -73,10 +73,11 @@ class Renderer:
         self.draw_pixel(x + 5*PIXEL_SIZE, y + 6*PIXEL_SIZE, player_engine)
 
     def draw_enemies(self, enemies):
+        from core.enemy import StrongEnemy, NormalEnemy  # Import here to avoid circular imports
         for enemy in enemies:
-            if enemy.type == 'strong':
+            if isinstance(enemy, StrongEnemy):
                 self.draw_strong_enemy(enemy.rect)
-            else:
+            elif isinstance(enemy, NormalEnemy):
                 self.draw_normal_enemy(enemy.rect)
 
     def draw_bullets(self, bullets, color):
