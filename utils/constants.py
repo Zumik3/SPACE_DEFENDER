@@ -29,6 +29,7 @@ player_height = 7 * PIXEL_SIZE
 player_speed = 7
 bullet_speed = 10
 enemy_bullet_speed = 6
+player_bullet_damage = 1  # Урон от пуль игрока
 enemy_normal_width = 7 * PIXEL_SIZE
 enemy_normal_height = 5 * PIXEL_SIZE
 enemy_strong_width = 9 * PIXEL_SIZE
@@ -45,15 +46,18 @@ ENEMY_SHOOT_DELAY = 800
 ENEMY_NORMAL_SPEED = 8  # for small bullets
 
 # Настройки бонусов
-POWERUP_HEALTH_CHANCE_STRONG = 0.15
-POWERUP_HEALTH_CHANCE_NORMAL = 0.1
-POWERUP_FIRE_CHANCE_STRONG = 0.1
-POWERUP_FIRE_CHANCE_NORMAL = 0.05
+POWERUP_HEALTH_CHANCE_STRONG = 0.25
+POWERUP_HEALTH_CHANCE_NORMAL = 0.25
+POWERUP_FIRE_CHANCE_STRONG = 0.25
+POWERUP_FIRE_CHANCE_NORMAL = 0.25
+POWERUP_DAMAGE_CHANCE_STRONG = 0.5
+POWERUP_DAMAGE_CHANCE_NORMAL = 0.5
 POWERUP_SPEED = 3
 POWERUP_HEALTH_COLOR = (0, 255, 0)
 POWERUP_FIRE_COLOR = (255, 255, 0)
+POWERUP_DAMAGE_COLOR = (255, 0, 255)  # Фиолетовый цвет для бонуса силы
 POWERUP_SIZE = 30
-FIRE_RATE_BOOST = 100
+FIRE_RATE_BOOST = 10
 
 # Размеры шрифтов
 SCORE_FONT_SIZE = 24

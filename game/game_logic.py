@@ -44,6 +44,7 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.powerups = pygame.sprite.Group()
         self.shoot_delay = PLAYER_SHOOT_DELAY
+        self.player_damage = 1  # Инициализируем силу выстрела
         # Подготовка звездного поля теперь происходит в start_level
         # if hasattr(self, 'renderer'):
         #     self.renderer.prepare_starfield()
@@ -122,34 +123,50 @@ class Game:
         if not self.player.invincible:
             enemy_hits = pygame.sprite.spritecollide(self.player, self.enemies, True)
             for enemy in enemy_hits:
+                # Игрок получает урон
+                player_destroyed = self.player.take_damage()
+                self.player.make_invincible()
+                self.sound_manager.play_explosion()
+                # Возвращаем врага в пул
+                if not enemy.alive() and self.object_pool_manager:
+                    self.object_pool_manager.return_object('enemy', enemy)
+                # Обновляем количество жизней в state_manager
                 if self.state_manager:
-                    game_over = self.state_manager.lose_life()
-                    self.player.make_invincible()
-                    self.sound_manager.play_explosion()
-                    # Возвращаем врага в пул
-                    if not enemy.alive() and self.object_pool_manager:
-                        self.object_pool_manager.return_object('enemy', enemy)
-                    if game_over:
-                        self.game_over = True
-                        # Уведомляем подписчиков об окончании игры
-                        if self.event_manager:
-                            self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                    if player_destroyed:
+                        game_over = self.state_manager.lose_life()
+                        if game_over:
+                            self.game_over = True
+                            # Уведомляем подписчиков об окончании игры
+                            if self.event_manager:
+                                self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                    else:
+                        # Обновляем количество жизней (если система жизней изменилась)
+                        current_lives = self.player.get_health()
+                        self.state_manager.player_lives = current_lives
 
         # Check collisions between player and enemy bullets
         if not self.player.invincible:
             bullet_hits = pygame.sprite.spritecollide(self.player, self.enemy_bullets, True)
             for bullet in bullet_hits:
+                # Игрок получает урон
+                player_destroyed = self.player.take_damage()
+                self.player.make_invincible()
+                # Возвращаем пулю в пул
+                if not bullet.alive() and self.object_pool_manager:
+                    self.object_pool_manager.return_object('bullet', bullet)
+                # Обновляем количество жизней в state_manager
                 if self.state_manager:
-                    game_over = self.state_manager.lose_life()
-                    self.player.make_invincible()
-                    # Возвращаем пулю в пул
-                    if not bullet.alive() and self.object_pool_manager:
-                        self.object_pool_manager.return_object('bullet', bullet)
-                    if game_over:
-                        self.game_over = True
-                        # Уведомляем подписчиков об окончании игры
-                        if self.event_manager:
-                            self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                    if player_destroyed:
+                        game_over = self.state_manager.lose_life()
+                        if game_over:
+                            self.game_over = True
+                            # Уведомляем подписчиков об окончании игры
+                            if self.event_manager:
+                                self.event_manager.notify("game_over", {"score": self.state_manager.get_score()})
+                    else:
+                        # Обновляем количество жизней (если система жизней изменилась)
+                        current_lives = self.player.get_health()
+                        self.state_manager.player_lives = current_lives
 
         # Check collisions between player and powerups
         powerup_hits = pygame.sprite.spritecollide(self.player, self.powerups, True)
@@ -164,8 +181,8 @@ class Game:
         bullet_hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, False)
         for bullet, hit_enemies in bullet_hits.items():
             for enemy in hit_enemies:
-                # Враг теряет одну единицу здоровья
-                if enemy.hit():
+                # Враг теряет здоровье равное урону от пули
+                if enemy.hit(bullet.damage):
                     # Враг умирает
                     enemy.kill()
                     # Drop powerups only when enemy dies

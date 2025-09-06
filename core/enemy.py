@@ -1,6 +1,12 @@
-import pygame
-from utils.constants import enemy_strong_width, enemy_strong_height, enemy_normal_width, enemy_normal_height, enemy_speed, screen_height, white, PIXEL_SIZE, enemy_normal_body, enemy_normal_highlight, enemy_strong_body, enemy_strong_core, enemy_strong_highlight, player_engine
 import random
+
+import pygame
+
+from utils.constants import (
+    enemy_strong_width, enemy_strong_height, enemy_normal_width, enemy_normal_height,
+    enemy_speed, screen_height, white, PIXEL_SIZE, enemy_normal_body, enemy_normal_highlight,
+    enemy_strong_body, enemy_strong_core, enemy_strong_highlight, player_engine
+)
 
 class Enemy(pygame.sprite.Sprite):
     """Базовый класс для всех врагов"""
@@ -10,7 +16,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.health = self.get_health()
+        self.health = self.get_initial_health()  # Устанавливаем начальное здоровье
         self.shoot_counter = random.randint(0, 29)  # for staggering
         self._draw_enemy()
         
@@ -24,8 +30,8 @@ class Enemy(pygame.sprite.Sprite):
     def _draw_pixel(self, x, y, color):
         pygame.draw.rect(self.image, color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
         
-    def hit(self):
-        self.health -= 1
+    def hit(self, damage=1):
+        self.health -= damage
         return self.health <= 0
         
     def get_rect(self):
@@ -42,7 +48,7 @@ class Enemy(pygame.sprite.Sprite):
     def get_height(self):
         raise NotImplementedError
         
-    def get_health(self):
+    def get_initial_health(self):
         raise NotImplementedError
         
     def get_score(self):
@@ -63,7 +69,7 @@ class NormalEnemy(Enemy):
     def get_height(self):
         return enemy_normal_height
         
-    def get_health(self):
+    def get_initial_health(self):
         return 2  # Маленькие враги имеют 2 жизни
         
     def get_score(self):
@@ -91,7 +97,7 @@ class NormalEnemy(Enemy):
             self.rect.y = y
             
         # Сбрасываем остальные параметры
-        self.health = self.get_health()
+        self.health = self.get_initial_health()
         self.shoot_counter = random.randint(0, 29)
         # Перерисовываем врага в image
         self._draw_enemy()
@@ -108,7 +114,7 @@ class StrongEnemy(Enemy):
     def get_height(self):
         return enemy_strong_height
         
-    def get_health(self):
+    def get_initial_health(self):
         return 4  # Большие враги имеют 4 жизни
         
     def get_score(self):
@@ -139,7 +145,7 @@ class StrongEnemy(Enemy):
             self.rect.y = y
             
         # Сбрасываем остальные параметры
-        self.health = self.get_health()
+        self.health = self.get_initial_health()
         self.shoot_counter = random.randint(0, 29)
         # Перерисовываем врага в image
         self._draw_enemy()

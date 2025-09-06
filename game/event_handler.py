@@ -19,6 +19,8 @@ class GameEventHandler:
                 pygame.quit()
                 quit()
             elif event.type == PLAYER_SHOOT_EVENT:
+                # Определяем урон пули в зависимости от силы выстрела
+                player_damage = getattr(self.game_logic, 'player_damage', 1)
                 # Создание пуль игрока через пул объектов
                 bullet = self.object_pool_manager.get_object(
                     'bullet',
@@ -28,7 +30,8 @@ class GameEventHandler:
                     bullet_color, 
                     0, 
                     4, 
-                    10
+                    10,
+                    player_damage
                 )
                 bullets.add(bullet)
                 self.sound_manager.play_shoot()
