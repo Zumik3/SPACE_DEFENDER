@@ -85,9 +85,9 @@ class ObjectPoolManager:
         else:
             raise ValueError(f"Неизвестный тип объекта: {object_type}")
             
-    def _create_bullet(self, x, y, vel_y, color, vel_x=0, width=4, height=10):
+    def _create_bullet(self, x, y, vel_y, color, vel_x=0, width=4, height=10, damage=1):
         """Создание пули"""
-        return Bullet(x, y, vel_y, color, vel_x, width, height)
+        return Bullet(x, y, vel_y, color, vel_x, width, height, damage)
         
     def _create_enemy(self, enemy_type, x=0, y=0):
         """Создание врага"""
@@ -108,6 +108,9 @@ class ObjectPoolManager:
         elif powerup_type == 'fire_rate':
             from core.powerup import FireRatePowerup
             return FireRatePowerup(x, y)
+        elif powerup_type == 'damage':
+            from core.powerup import DamagePowerup
+            return DamagePowerup(x, y)
         else:
             raise ValueError(f"Неизвестный тип бонуса: {powerup_type}")
             

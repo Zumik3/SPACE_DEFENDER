@@ -47,7 +47,10 @@ class Powerup(pygame.sprite.Sprite):
         is_strong = isinstance(enemy, StrongEnemy)
         health_chance = POWERUP_HEALTH_CHANCE_STRONG if is_strong else POWERUP_HEALTH_CHANCE_NORMAL
         fire_chance = POWERUP_FIRE_CHANCE_STRONG if is_strong else POWERUP_FIRE_CHANCE_NORMAL
+        damage_chance = POWERUP_DAMAGE_CHANCE_STRONG if is_strong else POWERUP_DAMAGE_CHANCE_NORMAL
         
+        # Если сработал шанс выпадения бонуса, они делятся так:
+        # жизнь - 25%, скорость - 25%, сила выстрела - 50%
         if r < health_chance:
             x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
             # Создаем бонус через ObjectPoolManager
@@ -62,6 +65,13 @@ class Powerup(pygame.sprite.Sprite):
                 return game.object_pool_manager.get_object('powerup', 'fire_rate', x_spawn, enemy.rect.centery - 10)
             else:
                 return FireRatePowerup(x_spawn, enemy.rect.centery - 10)
+        elif r < health_chance + fire_chance + damage_chance:
+            x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
+            # Создаем бонус через ObjectPoolManager
+            if game.object_pool_manager:
+                return game.object_pool_manager.get_object('powerup', 'damage', x_spawn, enemy.rect.centery - 10)
+            else:
+                return DamagePowerup(x_spawn, enemy.rect.centery - 10)
         
         return None
         
@@ -132,3 +142,34 @@ class FireRatePowerup(Powerup):
         if game.state_manager:
             game.shoot_delay = max(100, game.shoot_delay - FIRE_RATE_BOOST)
             pygame.time.set_timer(PLAYER_SHOOT_EVENT, game.shoot_delay)
+
+
+class DamagePowerup(Powerup):
+    def __init__(self, x, y):
+        self.color = POWERUP_DAMAGE_COLOR
+        super().__init__(x, y)
+
+    def draw_powerup(self):
+        # Очищаем поверхность
+        self.image.fill((0, 0, 0, 0))  # Прозрачный фон
+        
+        # Draw damage symbol (звездочка)
+        self.draw_pixel(3*PIXEL_SIZE, 1*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 5*PIXEL_SIZE)
+        self.draw_pixel(1*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(5*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(2*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(2*PIXEL_SIZE, 4*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 4*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 3*PIXEL_SIZE)  # Центр
+
+    def draw_pixel(self, x, y):
+        pygame.draw.rect(self.image, self.color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
+
+    def apply_effect(self, game):
+        # Увеличиваем силу выстрела игрока
+        if hasattr(game, 'player_damage'):
+            game.player_damage += 1
+        else:
+            game.player_damage = 2  # По умолчанию урон 1, увеличиваем до 2

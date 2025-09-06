@@ -44,6 +44,7 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.powerups = pygame.sprite.Group()
         self.shoot_delay = PLAYER_SHOOT_DELAY
+        self.player_damage = 1  # Инициализируем силу выстрела
         # Подготовка звездного поля теперь происходит в start_level
         # if hasattr(self, 'renderer'):
         #     self.renderer.prepare_starfield()
@@ -180,8 +181,8 @@ class Game:
         bullet_hits = pygame.sprite.groupcollide(self.bullets, self.enemies, True, False)
         for bullet, hit_enemies in bullet_hits.items():
             for enemy in hit_enemies:
-                # Враг теряет одну единицу здоровья
-                if enemy.hit():
+                # Враг теряет здоровье равное урону от пули
+                if enemy.hit(bullet.damage):
                     # Враг умирает
                     enemy.kill()
                     # Drop powerups only when enemy dies

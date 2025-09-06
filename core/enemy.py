@@ -30,8 +30,8 @@ class Enemy(pygame.sprite.Sprite):
     def _draw_pixel(self, x, y, color):
         pygame.draw.rect(self.image, color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
         
-    def hit(self):
-        self.health -= 1
+    def hit(self, damage=1):
+        self.health -= damage
         return self.health <= 0
         
     def get_rect(self):
