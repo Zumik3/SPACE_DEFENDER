@@ -111,6 +111,9 @@ class ObjectPoolManager:
         elif powerup_type == 'damage':
             from core.powerup import DamagePowerup
             return DamagePowerup(x, y)
+        elif powerup_type == 'blast':
+            from core.powerup import BlastPowerup
+            return BlastPowerup(x, y)
         else:
             raise ValueError(f"Неизвестный тип бонуса: {powerup_type}")
             
