@@ -48,9 +48,10 @@ class Powerup(pygame.sprite.Sprite):
         health_chance = POWERUP_HEALTH_CHANCE_STRONG if is_strong else POWERUP_HEALTH_CHANCE_NORMAL
         fire_chance = POWERUP_FIRE_CHANCE_STRONG if is_strong else POWERUP_FIRE_CHANCE_NORMAL
         damage_chance = POWERUP_DAMAGE_CHANCE_STRONG if is_strong else POWERUP_DAMAGE_CHANCE_NORMAL
+        blast_chance = POWERUP_BLAST_CHANCE_STRONG if is_strong else POWERUP_BLAST_CHANCE_NORMAL
         
         # Если сработал шанс выпадения бонуса, они делятся так:
-        # жизнь - 25%, скорость - 25%, сила выстрела - 50%
+        # жизнь - 20%, скорость - 20%, сила выстрела - 20%, мощная атака - 20%
         if r < health_chance:
             x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
             # Создаем бонус через ObjectPoolManager
@@ -72,6 +73,13 @@ class Powerup(pygame.sprite.Sprite):
                 return game.object_pool_manager.get_object('powerup', 'damage', x_spawn, enemy.rect.centery - 10)
             else:
                 return DamagePowerup(x_spawn, enemy.rect.centery - 10)
+        elif r < health_chance + fire_chance + damage_chance + blast_chance:
+            x_spawn = enemy.rect.centerx - POWERUP_SIZE // 2
+            # Создаем бонус через ObjectPoolManager
+            if game.object_pool_manager:
+                return game.object_pool_manager.get_object('powerup', 'blast', x_spawn, enemy.rect.centery - 10)
+            else:
+                return BlastPowerup(x_spawn, enemy.rect.centery - 10)
         
         return None
         
@@ -173,3 +181,46 @@ class DamagePowerup(Powerup):
             game.player_damage += 1
         else:
             game.player_damage = 2  # По умолчанию урон 1, увеличиваем до 2
+
+
+class BlastPowerup(Powerup):
+    def __init__(self, x, y):
+        self.color = POWERUP_BLAST_COLOR
+        super().__init__(x, y)
+
+    def draw_powerup(self):
+        # Очищаем поверхность
+        self.image.fill((0, 0, 0, 0))  # Прозрачный фон
+        
+        # Draw blast symbol (волновой эффект)
+        self.draw_pixel(1*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(2*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(2*PIXEL_SIZE, 4*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 1*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 3*PIXEL_SIZE)
+        self.draw_pixel(3*PIXEL_SIZE, 5*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 2*PIXEL_SIZE)
+        self.draw_pixel(4*PIXEL_SIZE, 4*PIXEL_SIZE)
+        self.draw_pixel(5*PIXEL_SIZE, 3*PIXEL_SIZE)
+
+    def draw_pixel(self, x, y):
+        pygame.draw.rect(self.image, self.color, (x, y, PIXEL_SIZE, PIXEL_SIZE))
+
+    def apply_effect(self, game):
+        # Уничтожаем всех врагов на экране
+        for enemy in game.enemies:
+            # Начисляем очки за каждого уничтоженного врага
+            if game.state_manager:
+                game.state_manager.update_score(enemy.get_score())
+                # Уведомляем подписчиков об изменении счета
+                if game.event_manager:
+                    game.event_manager.notify("score_updated", {"score": game.state_manager.get_score()})
+            # Возвращаем врага в пул
+            if not enemy.alive() and game.object_pool_manager:
+                game.object_pool_manager.return_object('enemy', enemy)
+            # Удаляем врага
+            enemy.kill()
+        
+        # Проигрываем звук взрыва
+        if game.sound_manager:
+            game.sound_manager.play_explosion()
